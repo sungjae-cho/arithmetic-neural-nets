@@ -32,6 +32,9 @@ def dir_measure_log():
 def dir_h1_logs():
     return 'h1_logs'
 
+def period_h1_log():
+    return 100
+
 def carry_dataset_statistics_name():
     return 'carry_dataset_statistics.csv'
 
