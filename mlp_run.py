@@ -144,6 +144,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         return_dict['carry'] = np_carry_labels
         return_dict['output'] = np_outputs
         return_dict['h1'] = h1_val
+        return_dict['operator'] = operator
 
         file_name = '{}_ep{}.pickle'.format(run_id, int(float_epoch))
         with open(os.path.join(dir_h1_logs, file_name), 'wb') as f:
