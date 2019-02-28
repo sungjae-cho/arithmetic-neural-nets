@@ -29,8 +29,8 @@ def dir_run_info_experiments():
 def dir_measure_log():
     return 'measure_logs'
 
-def dir_vis_hidden():
-    return 'vis_hidden'
+def dir_h1_logs():
+    return 'h1_logs'
 
 def carry_dataset_statistics_name():
     return 'carry_dataset_statistics.csv'
