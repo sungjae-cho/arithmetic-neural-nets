@@ -33,6 +33,7 @@ def dir_h1_logs():
     return 'h1_logs'
 
 def period_h1_log():
+    # return epoch period
     return 100
 
 def carry_dataset_statistics_name():
