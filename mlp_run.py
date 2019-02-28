@@ -113,34 +113,41 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
         return value_dict
 
-    def write_embeddings_summary(sess, h1):
-        # Reference: https://stackoverflow.com/questions/40849116/how-to-use-tensorboard-embedding-projector
-        dir_logs = os.path.join(config.dir_saved_models(), experiment_name)
-        metadata = os.path.join(dir_logs, 'metadata.tsv')
+    def write_h1_summary(sess, h1, run_id, float_epoch):
+        dir_h1_logs = os.path.join(config.dir_h1_logs(), experiment_name)
+        utils.create_dir(dir_h1_logs)
+
         carry_datasets = data_utils.import_carry_datasets(operand_bits, operator)
         input_arrays = list()
-        with open(metadata, 'w') as f:
-            for carries in carry_datasets.keys():
-                input_arrays.append(carry_datasets[carries]['input'])
-                f.write('{}\n'.format(carries))
+        output_arrays = list()
+        carry_arrays = list()
 
-        carry_inputs = np.concatenate(input_arrays, axis=0)
+        for carries in carry_datasets.keys():
+            input_array = carry_datasets[carries]['input']
+            output_array = carry_datasets[carries]['output']
+            n_examples = input_array.shape[0]
+            input_arrays.append(input_array)
+            output_arrays.append(output_array)
+            carry_arrays.append(np.full((n_examples), carries, dtype=np.int))
 
+        np_inputs = np.concatenate(input_arrays, axis=0)
+        np_outputs = np.concatenate(output_arrays, axis=0)
+        np_carry_labels = np.concatenate(carry_arrays, axis=0)
+
+        # Get h1 values.
         [h1_val] = sess.run([h1],
-            feed_dict={inputs:carry_inputs,
+            feed_dict={inputs:np_inputs,
                        condition_tlu:False})
 
-        h1_var = tf.Variable(h1_val, name='h1_var')
-        saver = tf.train.Saver([h1_var])
-        sess.run(h1_var.initializer)
-        saver.save(sess, os.path.join(dir_logs, 'h1_var.ckpt'))
+        return_dict = dict()
+        return_dict['input'] = np_inputs
+        return_dict['carry'] = np_carry_labels
+        return_dict['output'] = np_outputs
+        return_dict['h1'] = h1_val
 
-        pconfig = projector.ProjectorConfig()
-        pconfig.model_checkpoint_path = os.path.join(dir_logs, 'h1_var.ckpt')
-        embedding = pconfig.embeddings.add()
-        embedding.tensor_name = h1_var.name
-        embedding.metadata_path = metadata
-        projector.visualize_embeddings(tf.summary.FileWriter(dir_logs), pconfig)
+        file_name = '{}_ep{}.pickle'.format(run_id, int(float_epoch))
+        with open(os.path.join(dir_h1_logs, file_name), 'wb') as f:
+            pickle.dump(return_dict, f)
 
 
     def create_carry_datasets_summary_writers(logdir, carry_datasets):
@@ -442,6 +449,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
                     write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
                     write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                    write_h1_summary(sess, h1, run_id, float_epoch)
                     if tlu_on:
                         write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
@@ -457,6 +465,9 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 # training set summary writer###########################################################
                 if step % train_summary_period == 0:
                     (train_loss, train_accuracy) = write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
+
+                if float_epoch % config.period_h1_log() == 0:
+                    write_h1_summary(sess, h1, run_id, float_epoch)
 
                 # Development loss evalution
                 # After dev_summary_period batches are trained
@@ -507,7 +518,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                         model_name = 'epoch{}-batch{}'.format(float_epoch, i_batch)
                         init_all_correct_model_saver.save(sess, '{}/{}-init-all-correct.ckpt'.format(
                             dir_saved_model, model_name))
-                        write_embeddings_summary(sess, h1)
+                        write_h1_summary(sess, h1, run_id, float_epoch)
                         init_all_correct_model_saved = True
 
                     if all_correct_val and all_correct_stop:
