@@ -118,9 +118,11 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         utils.create_dir(dir_h1_logs)
 
         carry_datasets = data_utils.import_carry_datasets(operand_bits, operator)
-        carry_datasets['operator'] = operator
+
 
         for carries in carry_datasets.keys():
+            print(carries)
+            print(type(carry_datasets[carries]['input']))
             np_inputs = carry_datasets[carries]['input']
             # Get h1 values.
             [h1_val] = sess.run([h1],
@@ -128,6 +130,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                            condition_tlu:False})
             # Append to return_dict
             carry_datasets[carries]['h1'] = h1_val
+            carry_datasets[carries]['operator'] = operator
 
         file_name = '{}_ep{}.pickle'.format(run_id, int(float_epoch))
         with open(os.path.join(dir_h1_logs, file_name), 'wb') as f:
