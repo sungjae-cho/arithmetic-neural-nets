@@ -467,8 +467,8 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 if step % train_summary_period == 0:
                     (train_loss, train_accuracy) = write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
 
-                if float_epoch % config.period_h1_log() == 0:
-                    write_h1_summary(sess, h1, run_id, float_epoch)
+                #if float_epoch % config.period_h1_log() == 0:
+                #    write_h1_summary(sess, h1, run_id, float_epoch)
 
                 # Development loss evalution
                 # After dev_summary_period batches are trained
