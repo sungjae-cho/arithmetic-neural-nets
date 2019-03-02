@@ -16,13 +16,13 @@ def main():
     hidden_units =  int(sys.argv[4])
     str_device_num = str(int(sys.argv[5]))
     nn_model_type = 'mlp'
-    tlu_on = config.tlu_on()
+    on_tlu = config.on_tlu()
     mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
-        nn_model_type, tlu_on)
+        nn_model_type, on_tlu)
 
 
 def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
-    nn_model_type, tlu_on):
+    nn_model_type, on_tlu):
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
         _, _, _ = sess.run([loss, op_accuracy, train_op],
                             feed_dict={inputs:batch_input, targets:batch_target,
@@ -403,7 +403,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
     train_summary_writer = tf.summary.FileWriter(logdir + '/train', graph=tf.get_default_graph())
     dev_summary_writer = tf.summary.FileWriter(logdir + '/dev')
-    if tlu_on:
+    if on_tlu:
         tlu_summary_writer = tf.summary.FileWriter(logdir + '/tlu')
     test_summary_writer = tf.summary.FileWriter(logdir + '/test')
     if operator in config.operators_list():
@@ -457,7 +457,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                     write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
                     write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
                     write_h1_summary(sess, h1, run_id, float_epoch)
-                    if tlu_on:
+                    if on_tlu:
                         write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
 
@@ -488,8 +488,8 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
 
                     # TLU-dev summary writer#############################################################
-                    # tlu_on
-                    if tlu_on:
+                    # on_tlu
+                    if on_tlu:
                         dev_tlu_run_outputs = (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
                     else:
                         dev_tlu_run_outputs = None
@@ -547,7 +547,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
     train_summary_writer.close()
     dev_summary_writer.close()
-    if tlu_on:
+    if on_tlu:
         tlu_summary_writer.close()
     test_summary_writer.close()
     if operator in config.operators_list():

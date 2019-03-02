@@ -73,7 +73,7 @@ def dataset_ratio():
     (train_ratio, dev_ratio, test_ratio) = (0.8, 0.0, 0.2)
     return train_ratio, dev_ratio, test_ratio
 
-def tlu_on():
+def on_tlu():
     return True
 
 def on_carry_datasets_summary():
