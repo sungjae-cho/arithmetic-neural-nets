@@ -483,7 +483,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                     dev_run_outputs = (dev_loss_val, dev_accuracy_val, dev_op_wrong_val, per_digit_accuracy_val, per_digit_wrong_val) = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
                     # carry datasets summary writer #####################################################
-                    if (operator in config.operators_list()) and on_carry_datasets_summary():
+                    if (operator in config.operators_list()) and config.on_carry_datasets_summary():
                         carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
 
@@ -495,7 +495,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                         dev_tlu_run_outputs = None
 
                     # Write running information################################
-                    if operator in config.operators_list():
+                    if operator in config.operators_list() and config.on_carry_datasets_summary():
                         utils.write_run_info(run_info, float_epoch,
                                             dev_run_outputs, dev_tlu_run_outputs, carry_run_outputs)
                     else:
