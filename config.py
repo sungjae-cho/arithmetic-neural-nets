@@ -14,8 +14,8 @@ def dir_data():
     return 'data'
 
 def dir_saved_models():
-    #return 'saved_models'
-    return dir_logs()
+    return 'saved_models'
+    #return dir_logs()
 
 def dir_plot_fig():
     return 'plot_figures'
@@ -52,22 +52,22 @@ def learning_rate():
     return 0.001
 
 def all_correct_stop():
-    return False
+    return True
 
 def big_batch_saturation():
     return False
 
 def activation():
-    return tf.nn.tanh # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
+    return tf.nn.sigmoid # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
 
 def decreasing_dev_summary_period():
     return False
 
 def l1_coef():
-    return 0.01
+    return 0.000
 
 def l2_coef():
-    return 0.001
+    return 0.000
 
 def dataset_ratio():
     (train_ratio, dev_ratio, test_ratio) = (1.0, 0.0, 0.0)
