@@ -113,7 +113,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
         return value_dict
 
-    def write_h1_summary(sess, h1, run_id, float_epoch):
+    def write_h1_summary(sess, h1, run_id, float_epoch, init_all_correct=Fasle):
         dir_h1_logs = os.path.join(config.dir_h1_logs(), experiment_name)
         utils.create_dir(dir_h1_logs)
 
@@ -146,7 +146,10 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         return_dict['h1'] = h1_val
         return_dict['operator'] = operator
 
-        file_name = '{}_ep{}.pickle'.format(run_id, int(float_epoch))
+        if init_all_correct:
+            file_name = '{}_init_all_correct.pickle'.format(run_id, int(float_epoch))
+        else:
+            file_name = '{}_ep{}.pickle'.format(run_id, int(float_epoch))
         with open(os.path.join(dir_h1_logs, file_name), 'wb') as f:
             pickle.dump(return_dict, f)
 
@@ -519,7 +522,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                         model_name = 'epoch{}-batch{}'.format(float_epoch, i_batch)
                         init_all_correct_model_saver.save(sess, '{}/{}-init-all-correct.ckpt'.format(
                             dir_saved_model, model_name))
-                        write_h1_summary(sess, h1, run_id, float_epoch)
+                        write_h1_summary(sess, h1, run_id, float_epoch, True)
                         init_all_correct_model_saved = True
 
                     if all_correct_val and all_correct_stop:
