@@ -113,7 +113,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
         return value_dict
 
-    def write_h1_summary(sess, h1, run_id, float_epoch, init_all_correct=Fasle):
+    def write_h1_summary(sess, h1, run_id, float_epoch, init_all_correct=False):
         dir_h1_logs = os.path.join(config.dir_h1_logs(), experiment_name)
         utils.create_dir(dir_h1_logs)
 
