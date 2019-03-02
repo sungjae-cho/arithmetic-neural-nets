@@ -118,33 +118,19 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         utils.create_dir(dir_h1_logs)
 
         carry_datasets = data_utils.import_carry_datasets(operand_bits, operator)
-        input_arrays = list()
-        output_arrays = list()
-        carry_arrays = list()
+
 
         for carries in carry_datasets.keys():
-            input_array = carry_datasets[carries]['input']
-            output_array = carry_datasets[carries]['output']
-            n_examples = input_array.shape[0]
-            input_arrays.append(input_array)
-            output_arrays.append(output_array)
-            carry_arrays.append(np.full((n_examples), carries, dtype=np.int))
-
-        np_inputs = np.concatenate(input_arrays, axis=0)
-        np_outputs = np.concatenate(output_arrays, axis=0)
-        np_carry_labels = np.concatenate(carry_arrays, axis=0)
-
-        # Get h1 values.
-        [h1_val] = sess.run([h1],
-            feed_dict={inputs:np_inputs,
-                       condition_tlu:False})
-
-        return_dict = dict()
-        return_dict['input'] = np_inputs
-        return_dict['carry'] = np_carry_labels
-        return_dict['output'] = np_outputs
-        return_dict['h1'] = h1_val
-        return_dict['operator'] = operator
+            print(carries)
+            print(type(carry_datasets[carries]['input']))
+            np_inputs = carry_datasets[carries]['input']
+            # Get h1 values.
+            [h1_val] = sess.run([h1],
+                feed_dict={inputs:np_inputs,
+                           condition_tlu:False})
+            # Append to return_dict
+            carry_datasets[carries]['h1'] = h1_val
+            carry_datasets[carries]['operator'] = operator
 
         if init_all_correct:
             file_name = '{}_init_all_correct.pickle'.format(run_id, int(float_epoch))
