@@ -796,6 +796,12 @@ def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_rat
     # Dataset size
     ds_size = op_dataset['input'].shape[0]
 
+    # Shuffle input and output data
+    randomize = np.arange(ds_size)
+    np.random.shuffle(randomize)
+    op_dataset['input'] = op_dataset['input'][randomize]
+    op_dataset['output'] = op_dataset['output'][randomize]
+
     # Make a training set.
     train_end_index = int(ds_size * train_ratio)
     input_train = op_dataset['input'][:train_end_index,:]
