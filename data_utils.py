@@ -64,6 +64,21 @@ def get_int_dec(str_bin):
     return int_dec
 
 
+def get_op_symbol(operator):
+    if operator == 'add':
+        return '+'
+    elif operator == 'subtract':
+        return '-'
+    elif operator == 'multiply':
+        return '*'
+    elif operator == 'divide':
+        return '/'
+    elif operator == 'modulo':
+        return r'%'
+    else:
+        return None
+
+
 def get_np_bin(str_bin, np_bin_digits):
     '''
     Parameters
@@ -108,6 +123,41 @@ def get_leading_zeros(operand):
 def get_carry_ds_stat_path():
     carry_ds_stat_path = '{}/{}'.format(config.dir_data(), config.carry_dataset_statistics_name())
     return carry_ds_stat_path
+
+
+def np_io2str_op(np_input, np_output, operator):
+    '''
+    Parameters
+    ------
+    np_input : np.ndarray. 1-dimension. shape==(2 * operand_digits).
+    np_output : np.ndarray. 1-dimension. shape==(output_digits).
+
+    Returns
+    ------
+    str_operation : str.
+    - If np_input == [0, 0, 1, 1, 0, 1] and np_output == [0, 1, 1, 0],
+        then str_op == '001+101=0110'.
+    '''
+    operand_digits = np_input.shape[0] // 2
+    str_op1 = str()
+    str_op2 = str()
+    for i in range(operand_digits):
+        str_op1 = str_op1 + str(int(np_input[i]))
+        str_op2 = str_op2 + str(int(np_input[operand_digits + i]))
+
+    result_digits = np_output.shape[0]
+    str_result = str()
+    for i in range(result_digits):
+        str_result = str_result + str(int(np_output[i]))
+
+    str_operation = '{op1} {operator} {op2} = {result}'.format(
+        op1=str_op1,
+        op2=str_op2,
+        operator=get_op_symbol(operator),
+        result=str_result
+    )
+
+    return str_operation
 
 
 def less_than(operand1, operand2):
