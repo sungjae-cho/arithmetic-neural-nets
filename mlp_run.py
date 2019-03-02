@@ -250,7 +250,10 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     n_batch = train_size // batch_size
 
     # Print periods
-    train_summary_period = n_batch // 4 # 4 times per epoch
+    if (n_batch // 4) != 0:
+        train_summary_period = n_batch // 4 # 4 times per epoch
+    else:
+        train_summary_period = 1
     init_dev_summary_period = n_batch # n_batch: print at every epoch
     dev_summary_period = init_dev_summary_period
     decreasing_dev_summary_period = config.decreasing_dev_summary_period()
