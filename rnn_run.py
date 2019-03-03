@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.contrib.tensorboard.plugins import projector
 import numpy as np
 import utils
 import data_utils
@@ -15,13 +16,13 @@ def main():
     hidden_units =  int(sys.argv[4])
     str_device_num = str(int(sys.argv[5]))
     nn_model_type = 'mlp'
-    tlu_on = False
+    on_tlu = config.on_tlu()
     mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
-        nn_model_type, tlu_on)
+        nn_model_type, on_tlu)
 
 
 def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
-    nn_model_type, tlu_on):
+    nn_model_type, on_tlu):
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
         _, _, _ = sess.run([loss, op_accuracy, train_op],
                             feed_dict={inputs:batch_input, targets:batch_target,
@@ -112,6 +113,47 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
         return value_dict
 
+    def write_h1_summary(sess, h1, run_id, float_epoch, init_all_correct=False):
+        dir_h1_logs = os.path.join(config.dir_h1_logs(), experiment_name)
+        utils.create_dir(dir_h1_logs)
+
+        carry_datasets = data_utils.import_carry_datasets(operand_bits, operator)
+        input_arrays = list()
+        output_arrays = list()
+        carry_arrays = list()
+
+        for carries in carry_datasets.keys():
+            input_array = carry_datasets[carries]['input']
+            output_array = carry_datasets[carries]['output']
+            n_examples = input_array.shape[0]
+            input_arrays.append(input_array)
+            output_arrays.append(output_array)
+            carry_arrays.append(np.full((n_examples), carries, dtype=np.int))
+
+        np_inputs = np.concatenate(input_arrays, axis=0)
+        np_outputs = np.concatenate(output_arrays, axis=0)
+        np_carry_labels = np.concatenate(carry_arrays, axis=0)
+
+        # Get h1 values.
+        [h1_val] = sess.run([h1],
+            feed_dict={inputs:np_inputs,
+                       condition_tlu:False})
+
+        return_dict = dict()
+        return_dict['input'] = np_inputs
+        return_dict['carry'] = np_carry_labels
+        return_dict['output'] = np_outputs
+        return_dict['h1'] = h1_val
+        return_dict['operator'] = operator
+
+        if init_all_correct:
+            file_name = '{}_init_all_correct.pickle'.format(run_id, int(float_epoch))
+        else:
+            file_name = '{}_ep{}.pickle'.format(run_id, int(float_epoch))
+        with open(os.path.join(dir_h1_logs, file_name), 'wb') as f:
+            pickle.dump(return_dict, f)
+
+
     def create_carry_datasets_summary_writers(logdir, carry_datasets):
         carry_datasets_summary_writers = dict()
         for n_carries in carry_datasets.keys():
@@ -164,7 +206,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Disable all debugging logs: Unable to display GPU info when running on the bash
 
     # Import datasets
-    (train_ratio, dev_ratio, test_ratio) = (1.0, 0.0, 0.0)
+    (train_ratio, dev_ratio, test_ratio) = config.dataset_ratio()
     (input_train, input_dev, input_test,
         target_train, target_dev, target_test
     ) = data_utils.import_op_dataset(operator, operand_bits,
@@ -208,7 +250,10 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     n_batch = train_size // batch_size
 
     # Print periods
-    train_summary_period = n_batch // 4 # 4 times per epoch
+    if (n_batch // 4) != 0:
+        train_summary_period = n_batch // 4 # 4 times per epoch
+    else:
+        train_summary_period = 1
     init_dev_summary_period = n_batch # n_batch: print at every epoch
     dev_summary_period = init_dev_summary_period
     decreasing_dev_summary_period = config.decreasing_dev_summary_period()
@@ -231,9 +276,9 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     # Initializing paraters to learn.
     with tf.name_scope('parameter'):
         W1 = tf.Variable(tf.truncated_normal((NN_INPUT_DIM, h_layer_dims[0]), stddev=np.sqrt(init_factor / fan_in_1)), name="W1")
-        b1 = tf.zeros((h_layer_dims[0]), name="b1")
+        b1 = tf.Variable(tf.zeros((h_layer_dims[0])), name="b1")
         W2 = tf.Variable(tf.truncated_normal((h_layer_dims[0], NN_OUTPUT_DIM), stddev=np.sqrt(init_factor / fan_in_2)), name="W2")
-        b2 = tf.zeros((NN_OUTPUT_DIM), name="b2")
+        b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
 
     # Setting the input and target output.
     inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for mini-batch size
@@ -256,6 +301,14 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     with tf.name_scope('loss'):
         loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
         loss = tf.reduce_mean(loss)
+        if config.l1_coef() != 0:
+            loss = loss \
+                + config.l1_coef() / (2 * batch_size) * (tf.reduce_sum(tf.abs(W1)) + tf.reduce_sum(tf.abs(W2)))
+            #    + config.l1_coef() / (2 * batch_size) * (tf.reduce_sum(tf.abs(tf.abs(W1) - 1)) + tf.reduce_sum(tf.abs(tf.abs(W2) - 1)))
+        if config.l2_coef() != 0:
+            loss = loss \
+                + config.l2_coef() / (2 * batch_size) * (tf.reduce_sum(tf.square(W1)) + tf.reduce_sum(tf.square(W2)))
+
 
     # Get measures:
     # [1] operation measures (accuracy, n_wrong, n_correct)
@@ -350,7 +403,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
     train_summary_writer = tf.summary.FileWriter(logdir + '/train', graph=tf.get_default_graph())
     dev_summary_writer = tf.summary.FileWriter(logdir + '/dev')
-    if tlu_on:
+    if on_tlu:
         tlu_summary_writer = tf.summary.FileWriter(logdir + '/tlu')
     test_summary_writer = tf.summary.FileWriter(logdir + '/test')
     if operator in config.operators_list():
@@ -403,8 +456,10 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
                     write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
                     write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
-                    if tlu_on:
+                    write_h1_summary(sess, h1, run_id, float_epoch)
+                    if on_tlu:
                         write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+
 
                 # Set step, float_epoch
                 ## 1 <= (i_batch + 1) <= n_batch
@@ -418,6 +473,9 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 if step % train_summary_period == 0:
                     (train_loss, train_accuracy) = write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
 
+                #if float_epoch % config.period_h1_log() == 0:
+                #    write_h1_summary(sess, h1, run_id, float_epoch)
+
                 # Development loss evalution
                 # After dev_summary_period batches are trained
                 if (step % dev_summary_period == 0) or is_last_batch(i_batch):
@@ -425,19 +483,19 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                     dev_run_outputs = (dev_loss_val, dev_accuracy_val, dev_op_wrong_val, per_digit_accuracy_val, per_digit_wrong_val) = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
                     # carry datasets summary writer #####################################################
-                    if operator in config.operators_list():
+                    if (operator in config.operators_list()) and config.on_carry_datasets_summary():
                         carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
 
                     # TLU-dev summary writer#############################################################
-                    # tlu_on
-                    if tlu_on:
+                    # on_tlu
+                    if on_tlu:
                         dev_tlu_run_outputs = (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
                     else:
                         dev_tlu_run_outputs = None
 
                     # Write running information################################
-                    if operator in config.operators_list():
+                    if operator in config.operators_list() and config.on_carry_datasets_summary():
                         utils.write_run_info(run_info, float_epoch,
                                             dev_run_outputs, dev_tlu_run_outputs, carry_run_outputs)
                     else:
@@ -467,6 +525,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                         model_name = 'epoch{}-batch{}'.format(float_epoch, i_batch)
                         init_all_correct_model_saver.save(sess, '{}/{}-init-all-correct.ckpt'.format(
                             dir_saved_model, model_name))
+                        write_h1_summary(sess, h1, run_id, float_epoch, True)
                         init_all_correct_model_saved = True
 
                     if all_correct_val and all_correct_stop:
@@ -488,7 +547,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
     train_summary_writer.close()
     dev_summary_writer.close()
-    if tlu_on:
+    if on_tlu:
         tlu_summary_writer.close()
     test_summary_writer.close()
     if operator in config.operators_list():
