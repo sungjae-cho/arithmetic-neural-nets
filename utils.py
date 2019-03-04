@@ -100,6 +100,37 @@ def get_accuracy(targets, predictions):
     return op_accuracy
 
 
+def get_correct_seq(op_correct_stack):
+    '''
+    Parameters
+    -----
+    op_correct_stack : tf.Tensor. shape == (n_examples, max_seq_len).
+
+    Returns
+    -----
+    correct_seq : tf.Tensor. shape == (n_examples)
+    '''
+    op_correct_stack = tf.Variable(a)
+    reduced_stack = tf.reduce_sum(op_correct_stack, axis=1)
+    correct_seq = tf.cast(tf.not_equal(reduced_stack, 0), tf.int32)
+
+    return correct_seq
+
+def get_seq_accuracy(op_correct_stack):
+    '''
+    Parameters
+    -----
+    op_correct_stack : tf.Tensor. shape == (n_examples, max_seq_len).
+
+    Returns
+    -----
+    seq_accuracy : tf.Tensor. shape == (n_examples)
+    '''
+    correct_seq = get_correct_seq(op_correct_stack)
+    seq_accuracy = tf.reduce_mean(tf.cast(correct_seq, tf.float32))
+
+    return seq_accuracy
+
 def get_op_correct(targets, predictions):
     '''
     Parameters
@@ -160,7 +191,7 @@ def find_index(tensor, value=1):
     tensor_indices = tf.add(value_indices, no_value_indices)
 
     return tensor_indices
-    
+
 
 def get_fnn_model_name(run_id, tfnn_hidden_activation, list_layer_dims, str_optimizer, float_learning_rate, int_batch_size, epoch, str_acc_set, accuracy):
 
