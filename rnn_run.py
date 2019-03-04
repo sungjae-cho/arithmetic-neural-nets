@@ -50,7 +50,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
     def write_dev_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
 
-        dev_loss, dev_accuracy, merged_summary_op_val, dev_op_wrong_val, per_digit_accuracy_val, per_digit_wrong_val = sess.run(
+        dev_loss, dev_accuracy, merged_summary_op_val, dev_op_wrong_val = sess.run(
             compute_nodes,
             feed_dict={inputs:input_dev, targets:target_dev,
                        condition_tlu:False,
@@ -62,7 +62,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         ##print("└ epoch: {}, step: {}, dev_loss: {}, dev_accuracy: {}, op_wrong: {}".format(epoch, step, dev_loss, dev_accuracy, op_wrong_val))
         dev_summary_writer.add_summary(merged_summary_op_val, step)
 
-        return (dev_loss, dev_accuracy, dev_op_wrong_val, per_digit_accuracy_val, per_digit_wrong_val)
+        return (dev_loss, dev_accuracy, dev_op_wrong_val)
 
     def write_tlu_dev_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
         dev_loss_tlu, dev_accuracy_tlu, merged_summary_op_val, dev_op_wrong_val_tlu, _, _ = sess.run(
@@ -99,7 +99,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
             carry_dataset_input = carry_datasets[n_carries]['input']
             carry_dataset_output = carry_datasets[n_carries]['output']
 
-            carry_loss_val, carry_accuracy_val, merged_summary_op_val, carry_op_wrong_val, carry_per_digit_accuracy_val, carry_per_digit_wrong_val = sess.run(
+            carry_loss_val, carry_accuracy_val, merged_summary_op_val, carry_op_wrong_val = sess.run(
                 compute_nodes,
                 feed_dict={inputs:carry_dataset_input, targets:carry_dataset_output,
                            condition_tlu:False,
@@ -108,7 +108,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                            all_correct_epoch:(all_correct_val * float_epoch),
                            all_correct:all_correct_val})
 
-            value_dict[n_carries] = (carry_loss_val, carry_accuracy_val, carry_op_wrong_val, carry_per_digit_accuracy_val, carry_per_digit_wrong_val)
+            value_dict[n_carries] = (carry_loss_val, carry_accuracy_val, carry_op_wrong_val)
             carry_datasets_summary_writers[n_carries].add_summary(merged_summary_op_val, step)
 
         return value_dict
@@ -473,7 +473,8 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
     # Compute nodes
     train_compute_nodes = [loss, op_accuracy, merged_summary_op]
-    dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong, per_digit_accuracy, per_digit_wrong]
+    #dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong, per_digit_accuracy, per_digit_wrong]
+    dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong]
     test_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong]
 
     # Session configuration
@@ -534,7 +535,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 # After dev_summary_period batches are trained
                 if (step % dev_summary_period == 0) or is_last_batch(i_batch):
                     # dev set summary writer#############################################################
-                    dev_run_outputs = (dev_loss_val, dev_accuracy_val, dev_op_wrong_val, per_digit_accuracy_val, per_digit_wrong_val) = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                    dev_run_outputs = (dev_loss_val, dev_accuracy_val, dev_op_wrong_val) = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
                     # carry datasets summary writer #####################################################
                     if (operator in config.operators_list()) and config.on_carry_datasets_summary():
