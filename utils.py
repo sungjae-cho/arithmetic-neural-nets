@@ -50,7 +50,7 @@ def get_measures(targets, predictions):
 
     # Measure 1: (target) operation accuracy
     digits_correct = tf.reduce_sum(equal, axis=1)
-    tensor_op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
+    tensor_op_correct = tf.equal(digits_correct, n_dimensions)
     tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
 
     op_correct = tf.reduce_sum(tensor_op_correct)
@@ -90,7 +90,7 @@ def get_accuracy(targets, predictions):
 
     # Measure 1: (target) operation accuracy
     digits_correct = tf.reduce_sum(equal, axis=1)
-    tensor_op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
+    tensor_op_correct = tf.equal(digits_correct, n_dimensions)
     tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
 
     op_correct = tf.reduce_sum(tensor_op_correct)
@@ -125,7 +125,7 @@ def get_op_correct(targets, predictions):
 
     # Measure 1: (target) operation accuracy
     digits_correct = tf.reduce_sum(equal, axis=1)
-    op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
+    op_correct = tf.equal(digits_correct, n_dimensions)
     op_correct = tf.cast(op_correct, tf.int32)
 
     return op_correct
@@ -146,10 +146,10 @@ def find_index(tensor, value=1):
     -----
     tensor_indices : tf.Tensor. shape == (tensor.shape[0]).
     '''
-    equal_mask = tf.cast(tf.equal(inputs, tf.fill(tf.shape(inputs), value)), tf.int32)
+    equal_mask = tf.cast(tf.equal(inputs, value), tf.int32)
     reduced_equal_mask = tf.reduce_sum(equal_mask, axis=1)
 
-    no_value_mask = tf.cast(tf.equal(reduced_equal_mask, tf.zeros_like(reduced_equal_mask)), tf.int32)
+    no_value_mask = tf.cast(tf.equal(reduced_equal_mask, 0), tf.int32)
     no_value_indices = -no_value_mask
 
     value_indices = tf.argmax(equal_mask, axis=1, output_type=tf.int32)
