@@ -116,6 +116,24 @@ def get_correct_seq(op_correct_stack):
 
     return correct_seq
 
+
+def get_seq_wrong(op_correct_stack):
+    '''
+    Parameters
+    -----
+    op_correct_stack : tf.Tensor. shape == (n_examples, max_seq_len).
+
+    Returns
+    -----
+    wrong_seq : tf.Tensor. shape == (n_examples)
+    '''
+    n_examples = tf.shape(op_correct_stack)[0]
+    correct_seq = get_correct_seq(op_correct_stack)
+    seq_wrong = n_examples - tf.reduce_sum(correct_seq)
+
+    return seq_wrong
+    
+
 def get_seq_accuracy(op_correct_stack):
     '''
     Parameters
