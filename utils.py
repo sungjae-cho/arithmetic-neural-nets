@@ -74,6 +74,32 @@ def get_measures(targets, predictions):
             per_digit_accuracy, per_digit_wrong, per_digit_correct)
 
 
+def get_accuracy(targets, predictions):
+    '''
+    targets: true target vectors
+     - shape: (examples, vector_dimension)
+     - The elements of vectors are only 0 or 1.
+    predictions: predicted vectors
+     - shape: (examples, vector_dimension)
+     - The elements of vectors are only 0 or 1.
+    '''
+    n_examples = tf.shape(targets)[0]
+    n_dimensions = tf.shape(targets)[1]
+
+    equal = tf.cast(tf.equal(targets, predictions), tf.int32)
+
+    # Measure 1: (target) operation accuracy
+    digits_correct = tf.reduce_sum(equal, axis=1)
+    tensor_op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
+    tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
+
+    op_correct = tf.reduce_sum(tensor_op_correct)
+    op_wrong = n_examples - op_correct
+    op_accuracy = tf.cast(op_correct, tf.float64) / tf.cast(n_examples, tf.float64)
+
+    return op_accuracy
+
+
 def get_fnn_model_name(run_id, tfnn_hidden_activation, list_layer_dims, str_optimizer, float_learning_rate, int_batch_size, epoch, str_acc_set, accuracy):
 
     if tfnn_hidden_activation == tf.nn.sigmoid:
