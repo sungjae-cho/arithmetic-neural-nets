@@ -276,22 +276,23 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     ############################################################################
     # Creating a computational graph.
 
+    # Initializing paraters to learn.
+    with tf.name_scope('parameter'):
+        W1 = tf.Variable(tf.truncated_normal((NN_INPUT_DIM, h_layer_dims[0]), stddev=np.sqrt(init_factor / fan_in_1)), name="W1")
+        b1 = tf.Variable(tf.zeros((h_layer_dims[0])), name="b1")
+        W2 = tf.Variable(tf.truncated_normal((h_layer_dims[0], NN_OUTPUT_DIM), stddev=np.sqrt(init_factor / fan_in_2)), name="W2")
+        b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
+
+    # Setting the input and target output.
+    inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for mini-batch size
+    targets = tf.placeholder(tf.float32, shape=(None, target_train.shape[1]), name='targets')
+
+    condition_tlu = tf.placeholder(tf.int32, shape=(), name="tlu_condition")
+    is_tlu_hidden = tf.greater(condition_tlu, tf.constant(0, tf.int32))
+    #is_tlu_hidden = tf.constant(condition_tlu == True, dtype=tf.bool) # https://github.com/pkmital/tensorflow_tutorials/issues/36
+
     # Creating a graph for a MLP ###############################################
     if nn_model_type == 'mlp':
-        # Initializing paraters to learn.
-        with tf.name_scope('parameter'):
-            W1 = tf.Variable(tf.truncated_normal((NN_INPUT_DIM, h_layer_dims[0]), stddev=np.sqrt(init_factor / fan_in_1)), name="W1")
-            b1 = tf.Variable(tf.zeros((h_layer_dims[0])), name="b1")
-            W2 = tf.Variable(tf.truncated_normal((h_layer_dims[0], NN_OUTPUT_DIM), stddev=np.sqrt(init_factor / fan_in_2)), name="W2")
-            b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
-
-        # Setting the input and target output.
-        inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for mini-batch size
-        targets = tf.placeholder(tf.float32, shape=(None, target_train.shape[1]), name='targets')
-
-        condition_tlu = tf.placeholder(tf.int32, shape=(), name="tlu_condition")
-        is_tlu_hidden = tf.greater(condition_tlu, tf.constant(0, tf.int32))
-        #is_tlu_hidden = tf.constant(condition_tlu == True, dtype=tf.bool) # https://github.com/pkmital/tensorflow_tutorials/issues/36
 
         # NN structure
         with tf.name_scope('layer1'):
