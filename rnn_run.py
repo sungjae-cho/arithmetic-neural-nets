@@ -317,6 +317,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         # Forward pass
         logits_series = []
         predictions_series = []
+        accuracy_series = []
 
         # Sequential computation
         for t in range(max_time):
@@ -331,16 +332,24 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 sigmoid_outputs = tf.sigmoid(last_logits)
 
             predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
+            accuracy = utils.get_accuracy(targets, predictions)
 
             logits_series.append(sigmoid_outputs)
             predictions_series.append(predictions)
+            accuracy_series.append(accuracy)
 
-            # Loss: objective function
-            with tf.name_scope('loss'):
-                losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in logits_series]
-                loss = tf.reduce_mean(losses)
+        accuracy_stack = tf.stack(accuracy_series)
+        accmax_first_index = tf.argmax(accuracy_stack, axis=0) # argmax gets the first index among maximum elements.
+        accmax_predictions = tf.gather(predictions_series, accmax_first_index)
+        predictions = accmax_predictions
+
+        # Loss: objective function
+        with tf.name_scope('loss'):
+            losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in logits_series]
+            loss = tf.reduce_mean(losses)
     # Creating a graph for a Jordan RNN ###############################################
 
+    # Weight regularization part
     with tf.name_scope('loss'):
         if config.l1_coef() != 0:
             loss = loss \
@@ -393,6 +402,9 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     tf.summary.scalar('big_batch_training', big_batch_training)
     tf.summary.scalar('all_correct', all_correct)
     tf.summary.scalar('condition_tlu', condition_tlu)
+
+    if nn_model_type == 'rnn':
+        tf.summary.scalar('accmax_first_index', accmax_first_index)
 
     # Summary: Histogram
     with tf.name_scope('layer1'):
