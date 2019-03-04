@@ -320,7 +320,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         accuracy_series = []
 
         # Sequential computation
-        for t in range(max_time):
+        for t in range(config.max_time()):
             # t varies from 0 to (max_time - 1)
 
             input_and_prob_concat = tf.concat([inputs, sigmoid_outputs], axis=1)  # Increasing number of columns
