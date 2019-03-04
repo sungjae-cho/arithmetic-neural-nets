@@ -131,6 +131,34 @@ def get_op_correct(targets, predictions):
     return op_correct
 
 
+def find_index(tensor, value):
+    '''
+    This function returns the lowest indices of elements that have `value` along
+    rows, the second axis (axis=1). If there is no element having `value`, we
+    set its index as -1. Indices range from 0 to (tensor.shape[1] - 1).
+
+    Parameters
+    -----
+    tensor : tf.Tensor. Dimensions == 2.
+    value : A particular value to find.
+
+    Returns
+    -----
+    tensor_indices : tf.Tensor. shape == (tensor.shape[0]).
+    '''
+    equal_mask = tf.cast(tf.equal(inputs, tf.fill(tf.shape(inputs), value)), tf.int32)
+    reduced_equal_mask = tf.reduce_sum(equal_mask, axis=1)
+
+    no_value_mask = tf.cast(tf.equal(reduced_equal_mask, tf.zeros_like(reduced_equal_mask)), tf.int32)
+    no_value_indices = -no_value_mask
+
+    value_indices = tf.argmax(equal_mask, axis=1, output_type=tf.int32)
+
+    tensor_indices = tf.add(value_indices, no_value_indices)
+
+    return tensor_indices
+
+
 def find_first_correct_index(op_correct_stack):
     '''
     Parameters
