@@ -384,24 +384,11 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         tf.summary.scalar('accuracy', op_accuracy)
         tf.summary.scalar('wrong', op_wrong)
 
-    with tf.name_scope('digits'):
-        tf.summary.scalar('mean_accuracy', digits_mean_accuracy)
-        tf.summary.scalar('mean_wrong', digits_mean_wrong)
-
-    with tf.name_scope('per_digit'):
-        for i in range(NN_OUTPUT_DIM):
-            tf.summary.scalar('digit-{}/accuracy'.format(i+1), per_digit_accuracy[-(i+1)])
-            tf.summary.scalar('digit-{}/wrong'.format(i+1), per_digit_wrong[-(i+1)])
-            # add per_digit_correct
-
     tf.summary.scalar('epoch', training_epoch)
     tf.summary.scalar('all_correct_epoch', all_correct_epoch)
     tf.summary.scalar('big_batch_training', big_batch_training)
     tf.summary.scalar('all_correct', all_correct)
     tf.summary.scalar('condition_tlu', condition_tlu)
-
-    if nn_model_type == 'rnn':
-        tf.summary.scalar('accmax_first_index', accmax_first_index)
 
     # Summary: Histogram
     with tf.name_scope('layer1'):
@@ -412,6 +399,20 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         tf.summary.histogram('weight', W2)
         tf.summary.histogram('bias', b2)
         tf.summary.histogram('activation', sigmoid_outputs)
+
+    if nn_model_type == 'mlp':
+        with tf.name_scope('digits'):
+            tf.summary.scalar('mean_accuracy', digits_mean_accuracy)
+            tf.summary.scalar('mean_wrong', digits_mean_wrong)
+
+        with tf.name_scope('per_digit'):
+            for i in range(NN_OUTPUT_DIM):
+                tf.summary.scalar('digit-{}/accuracy'.format(i+1), per_digit_accuracy[-(i+1)])
+                tf.summary.scalar('digit-{}/wrong'.format(i+1), per_digit_wrong[-(i+1)])
+                # add per_digit_correct
+
+    if nn_model_type == 'rnn':
+        tf.summary.scalar('accmax_first_index', accmax_first_index)
 
     # Merge summary operations
     merged_summary_op = tf.summary.merge_all()
