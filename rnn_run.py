@@ -15,7 +15,7 @@ def main():
     operator =  sys.argv[3]
     hidden_units =  int(sys.argv[4])
     str_device_num = str(int(sys.argv[5]))
-    nn_model_type = 'mlp'
+    nn_model_type = 'rnn'
     on_tlu = config.on_tlu()
     mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
         nn_model_type, on_tlu)
@@ -276,34 +276,40 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     ############################################################################
     # Creating a computational graph.
 
-    # Initializing paraters to learn.
-    with tf.name_scope('parameter'):
-        W1 = tf.Variable(tf.truncated_normal((NN_INPUT_DIM, h_layer_dims[0]), stddev=np.sqrt(init_factor / fan_in_1)), name="W1")
-        b1 = tf.Variable(tf.zeros((h_layer_dims[0])), name="b1")
-        W2 = tf.Variable(tf.truncated_normal((h_layer_dims[0], NN_OUTPUT_DIM), stddev=np.sqrt(init_factor / fan_in_2)), name="W2")
-        b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
+    # Creating a graph for a MLP ###############################################
+    if nn_model_type == 'mlp':
+        # Initializing paraters to learn.
+        with tf.name_scope('parameter'):
+            W1 = tf.Variable(tf.truncated_normal((NN_INPUT_DIM, h_layer_dims[0]), stddev=np.sqrt(init_factor / fan_in_1)), name="W1")
+            b1 = tf.Variable(tf.zeros((h_layer_dims[0])), name="b1")
+            W2 = tf.Variable(tf.truncated_normal((h_layer_dims[0], NN_OUTPUT_DIM), stddev=np.sqrt(init_factor / fan_in_2)), name="W2")
+            b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
 
-    # Setting the input and target output.
-    inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for mini-batch size
-    targets = tf.placeholder(tf.float32, shape=(None, target_train.shape[1]), name='targets')
+        # Setting the input and target output.
+        inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for mini-batch size
+        targets = tf.placeholder(tf.float32, shape=(None, target_train.shape[1]), name='targets')
 
-    condition_tlu = tf.placeholder(tf.int32, shape=(), name="tlu_condition")
-    is_tlu_hidden = tf.greater(condition_tlu, tf.constant(0, tf.int32))
-    #is_tlu_hidden = tf.constant(condition_tlu == True, dtype=tf.bool) # https://github.com/pkmital/tensorflow_tutorials/issues/36
+        condition_tlu = tf.placeholder(tf.int32, shape=(), name="tlu_condition")
+        is_tlu_hidden = tf.greater(condition_tlu, tf.constant(0, tf.int32))
+        #is_tlu_hidden = tf.constant(condition_tlu == True, dtype=tf.bool) # https://github.com/pkmital/tensorflow_tutorials/issues/36
 
-    # NN structure
-    with tf.name_scope('layer1'):
-        h1_logits = tf.add(tf.matmul(inputs,  W1), b1)
-        h1 = tf.cond(is_tlu_hidden, lambda: utils.tf_tlu(h1_logits, name='h1_tlu'), lambda: activation(h1_logits, name='h1')) # https://stackoverflow.com/questions/35833011/how-to-add-if-condition-in-a-tensorflow-graph / https://www.tensorflow.org/versions/r1.7/api_docs/python/tf/cond
-    with tf.name_scope('layer2'):
-        last_logits = tf.add(tf.matmul(h1,  W2), b2)
-        sigmoid_outputs = tf.sigmoid(last_logits)
-    predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
+        # NN structure
+        with tf.name_scope('layer1'):
+            h1_logits = tf.add(tf.matmul(inputs,  W1), b1)
+            h1 = tf.cond(is_tlu_hidden, lambda: utils.tf_tlu(h1_logits, name='h1_tlu'), lambda: activation(h1_logits, name='h1')) # https://stackoverflow.com/questions/35833011/how-to-add-if-condition-in-a-tensorflow-graph / https://www.tensorflow.org/versions/r1.7/api_docs/python/tf/cond
+        with tf.name_scope('layer2'):
+            last_logits = tf.add(tf.matmul(h1,  W2), b2)
+            sigmoid_outputs = tf.sigmoid(last_logits)
+        predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
 
-    # Loss: objective function
+        # Loss: objective function
+        with tf.name_scope('loss'):
+            loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
+            loss = tf.reduce_mean(loss)
+
+
+
     with tf.name_scope('loss'):
-        loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
-        loss = tf.reduce_mean(loss)
         if config.l1_coef() != 0:
             loss = loss \
                 + config.l1_coef() / (2 * batch_size) * (tf.reduce_sum(tf.abs(W1)) + tf.reduce_sum(tf.abs(W2)))
