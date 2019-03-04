@@ -511,7 +511,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
                     write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
                     write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
-                    write_h1_summary(sess, h1, run_id, float_epoch)
+                    #write_h1_summary(sess, h1, run_id, float_epoch)
                     if on_tlu:
                         write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
 
@@ -580,7 +580,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                         model_name = 'epoch{}-batch{}'.format(float_epoch, i_batch)
                         init_all_correct_model_saver.save(sess, '{}/{}-init-all-correct.ckpt'.format(
                             dir_saved_model, model_name))
-                        write_h1_summary(sess, h1, run_id, float_epoch, True)
+                        #write_h1_summary(sess, h1, run_id, float_epoch, True)
                         init_all_correct_model_saved = True
 
                     if all_correct_val and all_correct_stop:
