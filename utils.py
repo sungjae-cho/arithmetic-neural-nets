@@ -132,7 +132,7 @@ def get_seq_wrong(op_correct_stack):
     seq_wrong = n_examples - tf.reduce_sum(correct_seq)
 
     return seq_wrong
-    
+
 
 def get_seq_accuracy(op_correct_stack):
     '''
@@ -178,6 +178,27 @@ def get_op_correct(targets, predictions):
     op_correct = tf.cast(op_correct, tf.int32)
 
     return op_correct
+
+
+def get_mean_correct_index(op_correct_stack):
+    '''
+    Parameters
+    -----
+    op_correct_stack : tf.Tensor. shape == (n_examples, max_seq_len).
+
+    Returns
+    -----
+    mean_correct_index : tf.Tensor. shape == (1)
+
+    This function is adopted from the following link.
+    https://stackoverflow.com/questions/42184663/how-to-find-an-index-of-the-first-matching-element-in-tensorflow
+    '''
+    correct_val = 1
+    tmp_indices = tf.where(tf.equal(op_correct_stack, correct_val))
+    correct_indices = tf.segment_min(tmp_indices[:, 1], tmp_indices[:, 0])
+    mean_correct_index = tf.reduce_mean(tf.cast(correct_indices, tf.float32))
+
+    return mean_correct_index
 
 
 def find_index(tensor, value=1):

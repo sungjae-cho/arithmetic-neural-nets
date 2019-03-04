@@ -350,6 +350,9 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
         op_correct_stack = tf.stack(op_correct_series)
         op_correct_indices = utils.find_index(op_correct_stack)
+        op_accuracy = utils.get_seq_accuracy(op_correct_stack)
+        op_wrong = utils.get_seq_wrong(op_correct_stack)
+        mean_correct_index = utils.get_mean_correct_index(op_correct_stack)
 
         # Loss: objective function
         with tf.name_scope('loss'):
