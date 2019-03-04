@@ -226,7 +226,10 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         target_dev = target_test
 
     # Contants
-    NN_INPUT_DIM = input_train.shape[1]
+    if nn_model_type == 'mlp':
+        NN_INPUT_DIM = input_train.shape[1]
+    if nn_model_type == 'rnn':
+        NN_INPUT_DIM = input_train.shape[1] + target_train.shape[1]
     NN_OUTPUT_DIM = target_train.shape[1]
 
     # Hyperparameters - training
