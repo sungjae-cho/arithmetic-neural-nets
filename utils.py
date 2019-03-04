@@ -145,6 +145,9 @@ def find_index(tensor, value=1):
     Returns
     -----
     tensor_indices : tf.Tensor. shape == (tensor.shape[0]).
+
+    I got this implementation idea from the following link.
+    https://stackoverflow.com/questions/42184663/how-to-find-an-index-of-the-first-matching-element-in-tensorflow
     '''
     equal_mask = tf.cast(tf.equal(inputs, value), tf.int32)
     reduced_equal_mask = tf.reduce_sum(equal_mask, axis=1)
@@ -157,25 +160,7 @@ def find_index(tensor, value=1):
     tensor_indices = tf.add(value_indices, no_value_indices)
 
     return tensor_indices
-
-
-def find_first_correct_index(op_correct_stack):
-    '''
-    Parameters
-    -----
-    op_correct_stack : tf.Tensor. shape == (n_examples, max_seq_len)
-
-
-    Returns
-    -----
-    tensor_first_index : tf.Tensor. shape == (n_examples)
-
-    https://stackoverflow.com/questions/42184663/how-to-find-an-index-of-the-first-matching-element-in-tensorflow
-
-    '''
-    pass
-
-
+    
 
 def get_fnn_model_name(run_id, tfnn_hidden_activation, list_layer_dims, str_optimizer, float_learning_rate, int_batch_size, epoch, str_acc_set, accuracy):
 
