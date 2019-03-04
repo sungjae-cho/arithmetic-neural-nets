@@ -312,7 +312,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     # Creating a graph for a Jordan RNN ###############################################
     if nn_model_type == 'rnn':
         init_output_val = 0.5 # 0.5 means being uncertain about decision of 0 or 1.
-        sigmoid_outputs = tf.Variable(tf.fill([batch_size, target_train.shape[1]], init_output_val), dtype=tf.float32, name="sigmoid_outputs")
+        sigmoid_outputs = tf.fill([batch_size, target_train.shape[1]], init_output_val, name="sigmoid_outputs")
 
         # Forward pass
         logits_series = []
