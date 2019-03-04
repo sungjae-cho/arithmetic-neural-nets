@@ -100,6 +100,37 @@ def get_accuracy(targets, predictions):
     return op_accuracy
 
 
+def get_op_correct(targets, predictions):
+    '''
+    Parameters
+    -----
+    targets: true target vectors
+     - shape: (examples, vector_dimension)
+     - The elements of vectors are only 0 or 1.
+    predictions: predicted vectors
+     - shape: (examples, vector_dimension)
+     - The elements of vectors are only 0 or 1.
+
+    Returns
+    -----
+    op_correct : numpy.ndarray. shape == (examples).
+     - If an example is correct, the value is 1. Otherwise, 0.
+     - If the first and last examples are correct, then op_correct becomes [1, ..., 1].
+
+    '''
+    n_examples = tf.shape(targets)[0]
+    n_dimensions = tf.shape(targets)[1]
+
+    equal = tf.cast(tf.equal(targets, predictions), tf.int32)
+
+    # Measure 1: (target) operation accuracy
+    digits_correct = tf.reduce_sum(equal, axis=1)
+    tensor_op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
+    tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
+
+    return tensor_op_correct
+
+
 def get_fnn_model_name(run_id, tfnn_hidden_activation, list_layer_dims, str_optimizer, float_learning_rate, int_batch_size, epoch, str_acc_set, accuracy):
 
     if tfnn_hidden_activation == tf.nn.sigmoid:
