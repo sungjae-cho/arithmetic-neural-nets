@@ -307,6 +307,16 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         with tf.name_scope('loss'):
             loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
             loss = tf.reduce_mean(loss)
+
+        # Get measures:
+        # [1] operation measures (accuracy, n_wrong, n_correct)
+        # [2] mean digits accuracy (mean_digits_accuracy)
+        # [3] per digit accuracy (per_digit_accuracy)
+        (op_accuracy, op_wrong, op_correct,
+         digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
+         per_digit_accuracy, per_digit_wrong, per_digit_correct
+        ) = utils.get_measures(targets, predictions)
+
     # Creating a graph for a MLP ###############################################
 
     # Creating a graph for a Jordan RNN ###############################################
@@ -356,17 +366,6 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         if config.l2_coef() != 0:
             loss = loss \
                 + config.l2_coef() / (2 * batch_size) * (tf.reduce_sum(tf.square(W1)) + tf.reduce_sum(tf.square(W2)))
-
-
-    # Get measures:
-    # [1] operation measures (accuracy, n_wrong, n_correct)
-    # [2] mean digits accuracy (mean_digits_accuracy)
-    # [3] per digit accuracy (per_digit_accuracy)
-    (op_accuracy, op_wrong, op_correct,
-     digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
-     per_digit_accuracy, per_digit_wrong, per_digit_correct
-    ) = utils.get_measures(targets, predictions)
-
 
     # Training, optimization
     train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
