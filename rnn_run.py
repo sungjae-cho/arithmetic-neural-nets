@@ -284,8 +284,8 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
 
     # Setting the input and target output.
-    inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for mini-batch size
-    targets = tf.placeholder(tf.float32, shape=(None, target_train.shape[1]), name='targets')
+    inputs = tf.placeholder(tf.float32, shape=(batch_size, input_train.shape[1]), name='inputs')
+    targets = tf.placeholder(tf.float32, shape=(batch_size, target_train.shape[1]), name='targets')
 
     condition_tlu = tf.placeholder(tf.int32, shape=(), name="tlu_condition")
     is_tlu_hidden = tf.greater(condition_tlu, tf.constant(0, tf.int32))
