@@ -284,8 +284,8 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         b2 = tf.Variable(tf.zeros((NN_OUTPUT_DIM)), name="b2")
 
     # Setting the input and target output.
-    inputs = tf.placeholder(tf.float32, shape=(batch_size, input_train.shape[1]), name='inputs')
-    targets = tf.placeholder(tf.float32, shape=(batch_size, target_train.shape[1]), name='targets')
+    inputs = tf.placeholder(tf.float32, shape=(None, input_train.shape[1]), name='inputs') # None for batch_size. This is variable because of different size of train and test sets.
+    targets = tf.placeholder(tf.float32, shape=(None, target_train.shape[1]), name='targets')
 
     condition_tlu = tf.placeholder(tf.int32, shape=(), name="tlu_condition")
     is_tlu_hidden = tf.greater(condition_tlu, tf.constant(0, tf.int32))
@@ -312,7 +312,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     # Creating a graph for a Jordan RNN ###############################################
     if nn_model_type == 'rnn':
         init_output_val = 0.5 # 0.5 means being uncertain about decision of 0 or 1.
-        sigmoid_outputs = tf.fill([batch_size, target_train.shape[1]], init_output_val, name="sigmoid_outputs")
+        sigmoid_outputs = tf.fill(tf.shape(targets), init_output_val, name="sigmoid_outputs")
 
         # Forward pass
         logits_series = []
