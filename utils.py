@@ -180,7 +180,7 @@ def get_op_correct(targets, predictions):
     return op_correct
 
 
-def get_mean_correct_index(op_correct_stack):
+def get_mean_correct_first_index(op_correct_stack):
     '''
     Parameters
     -----
