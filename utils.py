@@ -403,8 +403,11 @@ def init_run_info(NN_OUTPUT_DIM):
 def write_run_info(run_info, float_epoch,
                    dev_run_outputs, dev_tlu_run_outputs, carry_run_outputs=None):
 
-    (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
-     per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
+    if len(dev_run_outputs) == 5:
+        (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
+         per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
+    if len(dev_run_outputs) == 3:
+        (dev_loss_val, dev_accuracy_val, dev_op_wrong_val) = dev_run_outputs
 
     if dev_tlu_run_outputs != None:
         (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = dev_tlu_run_outputs
@@ -420,9 +423,10 @@ def write_run_info(run_info, float_epoch,
         run_info['last_tlu_test_loss'] = dev_loss_tlu_val
         run_info['last_tlu_test_accuracy'] = dev_accuracy_tlu_val
         run_info['last_tlu_op_wrong'] = dev_op_wrong_tlu_val
-    for i in range(len(per_digit_wrong_val)):
-        run_info['last_digit-{}_accuracy'.format(i+1)] = per_digit_accuracy_val[-(i+1)]
-        run_info['last_digit-{}_wrong'.format(i+1)] = per_digit_wrong_val[-(i+1)]
+    if len(dev_run_outputs) == 5:
+        for i in range(len(per_digit_wrong_val)):
+            run_info['last_digit-{}_accuracy'.format(i+1)] = per_digit_accuracy_val[-(i+1)]
+            run_info['last_digit-{}_wrong'.format(i+1)] = per_digit_wrong_val[-(i+1)]
     if carry_run_outputs != None:
         for n_carries in carry_run_outputs.keys():
             carry_accuracy_val = carry_run_outputs[n_carries][1]
@@ -438,18 +442,19 @@ def write_run_info(run_info, float_epoch,
         run_info['init_all_correct_epoch'] = float_epoch
 
     # The float epoch of all correct digit
-    for i in range(len(per_digit_wrong_val)):
-        # init_all_correct: the initial time to attain all correct digit outputs.
-        init_all_correct_key = 'init_all_correct_digit-{}_epoch'.format(i+1)
-        # init_complete_all_correct: the last initial time to attain all correct digit outputs.
-        init_complete_all_correct_key = 'init_complete_all_correct_digit-{}_epoch'.format(i+1)
+    if len(dev_run_outputs) == 5:
+        for i in range(len(per_digit_wrong_val)):
+            # init_all_correct: the initial time to attain all correct digit outputs.
+            init_all_correct_key = 'init_all_correct_digit-{}_epoch'.format(i+1)
+            # init_complete_all_correct: the last initial time to attain all correct digit outputs.
+            init_complete_all_correct_key = 'init_complete_all_correct_digit-{}_epoch'.format(i+1)
 
-        if per_digit_wrong_val[-(i+1)] == 0 and run_info[init_all_correct_key] == -1:
-            run_info[init_all_correct_key] = float_epoch
-        if per_digit_wrong_val[-(i+1)] == 0 and run_info[init_complete_all_correct_key] == -1:
-            run_info[init_complete_all_correct_key] = float_epoch
-        if per_digit_wrong_val[-(i+1)] != 0 and run_info[init_complete_all_correct_key] != -1:
-            run_info[init_complete_all_correct_key] = -1
+            if per_digit_wrong_val[-(i+1)] == 0 and run_info[init_all_correct_key] == -1:
+                run_info[init_all_correct_key] = float_epoch
+            if per_digit_wrong_val[-(i+1)] == 0 and run_info[init_complete_all_correct_key] == -1:
+                run_info[init_complete_all_correct_key] = float_epoch
+            if per_digit_wrong_val[-(i+1)] != 0 and run_info[init_complete_all_correct_key] != -1:
+                run_info[init_complete_all_correct_key] = -1
 
     # The float epoch of all carry datasets
     if carry_run_outputs != None:
@@ -482,8 +487,11 @@ def write_run_info(run_info, float_epoch,
 def write_measures(run_info, float_epoch,
                    dev_run_outputs, dev_tlu_run_outputs):
 
-    (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
-     per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
+    if len(dev_run_outputs) == 5:
+        (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
+         per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
+    if len(dev_run_outputs) == 3:
+        (dev_loss_val, dev_accuracy_val, dev_op_wrong_val) = dev_run_outputs
 
     if dev_tlu_run_outputs != None:
         (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = dev_tlu_run_outputs
@@ -505,10 +513,10 @@ def write_measures(run_info, float_epoch,
             measure_logs['tlu_test_loss'] = list()
             measure_logs['tlu_test_accuracy'] = list()
             measure_logs['tlu_op_wrong'] = list()
-
-        for i in range(len(per_digit_wrong_val)):
-            measure_logs['digit-{}_accuracy'.format(i+1)] = list()
-            measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
+        if len(dev_run_outputs) == 5:
+            for i in range(len(per_digit_wrong_val)):
+                measure_logs['digit-{}_accuracy'.format(i+1)] = list()
+                measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
 
     else:
         # Import the measure log dictionary from the pickle file.
@@ -524,10 +532,10 @@ def write_measures(run_info, float_epoch,
         measure_logs['tlu_test_loss'].append(dev_loss_tlu_val)
         measure_logs['tlu_test_accuracy'].append(dev_accuracy_tlu_val)
         measure_logs['tlu_op_wrong'].append(dev_op_wrong_tlu_val)
-
-    for i in range(len(per_digit_wrong_val)):
-        measure_logs['digit-{}_accuracy'.format(i+1)].append(per_digit_accuracy_val[-(i+1)])
-        measure_logs['digit-{}_op_wrong'.format(i+1)].append(per_digit_wrong_val[-(i+1)])
+    if len(dev_run_outputs) == 5:
+        for i in range(len(per_digit_wrong_val)):
+            measure_logs['digit-{}_accuracy'.format(i+1)].append(per_digit_accuracy_val[-(i+1)])
+            measure_logs['digit-{}_op_wrong'.format(i+1)].append(per_digit_wrong_val[-(i+1)])
 
     # Write the appended measure_logs
     with open(pickle_path, 'wb') as f:
