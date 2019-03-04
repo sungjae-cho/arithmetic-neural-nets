@@ -306,8 +306,39 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         with tf.name_scope('loss'):
             loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
             loss = tf.reduce_mean(loss)
+    # Creating a graph for a MLP ###############################################
 
+    # Creating a graph for a Jordan RNN ###############################################
+    if nn_model_type == 'rnn':
+        init_output_val = 0.5 # 0.5 means being uncertain about decision of 0 or 1.
+        sigmoid_outputs = tf.Variable(tf.fill([batch_size, target_train.shape[1]], init_output_val), dtype=tf.float32, name="sigmoid_outputs")
 
+        # Forward pass
+        logits_series = []
+        predictions_series = []
+
+        # Sequential computation
+        for t in range(max_time):
+            # t varies from 0 to (max_time - 1)
+
+            input_and_prob_concat = tf.concat([inputs, sigmoid_outputs], axis=1)  # Increasing number of columns
+            with tf.name_scope('layer1'):
+                h1 = activation(tf.add(tf.matmul(input_and_prob_concat, W1), b1))  # Broadcasted addition
+
+            with tf.name_scope('layer2'):
+                last_logits = tf.add(tf.matmul(h1,  W2), b2)
+                sigmoid_outputs = tf.sigmoid(last_logits)
+
+            predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
+
+            logits_series.append(sigmoid_outputs)
+            predictions_series.append(predictions)
+
+            # Loss: objective function
+            with tf.name_scope('loss'):
+                losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in logits_series]
+                loss = tf.reduce_mean(losses)
+    # Creating a graph for a Jordan RNN ###############################################
 
     with tf.name_scope('loss'):
         if config.l1_coef() != 0:
