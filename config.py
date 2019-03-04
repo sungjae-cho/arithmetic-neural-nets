@@ -70,14 +70,17 @@ def l2_coef():
     return 0.000
 
 def dataset_ratio():
-    (train_ratio, dev_ratio, test_ratio) = (0.8, 0.0, 0.2)
+    (train_ratio, dev_ratio, test_ratio) = (1.0, 0.0, 0.0)
     return train_ratio, dev_ratio, test_ratio
 
 def on_tlu():
-    return True
+    return False
 
 def on_carry_datasets_summary():
     return False
+
+def max_time():
+    return 30
 
 '''operators_list = ['add', 'subtract', 'multiply', 'divide', 'modulo']
 operand_digits_list = [4, 6, 8]
