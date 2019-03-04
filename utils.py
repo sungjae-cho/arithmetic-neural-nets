@@ -125,10 +125,28 @@ def get_op_correct(targets, predictions):
 
     # Measure 1: (target) operation accuracy
     digits_correct = tf.reduce_sum(equal, axis=1)
-    tensor_op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
-    tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
+    op_correct = tf.equal(digits_correct, tf.ones_like(digits_correct) * n_dimensions)
+    op_correct = tf.cast(op_correct, tf.int32)
 
-    return tensor_op_correct
+    return op_correct
+
+
+def find_first_correct_index(op_correct_stack):
+    '''
+    Parameters
+    -----
+    op_correct_stack : tf.Tensor. shape == (n_examples, max_seq_len)
+
+
+    Returns
+    -----
+    tensor_first_index : tf.Tensor. shape == (n_examples)
+
+    https://stackoverflow.com/questions/42184663/how-to-find-an-index-of-the-first-matching-element-in-tensorflow
+
+    '''
+    pass
+
 
 
 def get_fnn_model_name(run_id, tfnn_hidden_activation, list_layer_dims, str_optimizer, float_learning_rate, int_batch_size, epoch, str_acc_set, accuracy):
