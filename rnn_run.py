@@ -415,7 +415,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 # add per_digit_correct
 
     if nn_model_type == 'rnn':
-        tf.summary.scalar('accmax_first_index', accmax_first_index)
+        tf.summary.scalar('mean_correct_first_index', mean_correct_index)
 
     # Merge summary operations
     merged_summary_op = tf.summary.merge_all()
