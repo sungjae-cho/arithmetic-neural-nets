@@ -318,6 +318,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         logits_series = []
         predictions_series = []
         accuracy_series = []
+        op_correct_series = []
 
         # Sequential computation
         for t in range(config.max_time()):
@@ -333,12 +334,18 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
 
             predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
             accuracy = utils.get_accuracy(targets, predictions)
+            op_correct = utils.get_op_correct(targets, predictions)
 
             logits_series.append(sigmoid_outputs)
             predictions_series.append(predictions)
             accuracy_series.append(accuracy)
+            op_correct_series.append(op_correct)
 
         accuracy_stack = tf.stack(accuracy_series)
+        op_correct_stack = tf.stack(op_correct_series)
+
+        op_correct_indices = utils.find_index(op_correct_stack)
+
         accmax_first_index = tf.argmax(accuracy_stack, axis=0) # argmax gets the first index among maximum elements.
         accmax_predictions = tf.gather(predictions_series, accmax_first_index)
         predictions = accmax_predictions
