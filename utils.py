@@ -110,7 +110,6 @@ def get_correct_seq(op_correct_stack):
     -----
     correct_seq : tf.Tensor. shape == (n_examples)
     '''
-    op_correct_stack = tf.Variable(a)
     reduced_stack = tf.reduce_sum(op_correct_stack, axis=1)
     correct_seq = tf.cast(tf.not_equal(reduced_stack, 0), tf.int32)
 
