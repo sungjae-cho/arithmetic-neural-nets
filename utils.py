@@ -131,7 +131,7 @@ def get_op_correct(targets, predictions):
     return op_correct
 
 
-def find_index(tensor, value):
+def find_index(tensor, value=1):
     '''
     This function returns the lowest indices of elements that have `value` along
     rows, the second axis (axis=1). If there is no element having `value`, we
