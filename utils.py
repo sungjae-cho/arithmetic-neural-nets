@@ -179,7 +179,7 @@ def get_op_correct(targets, predictions):
     return op_correct
 
 
-def get_correct_first_index_stat(op_correct_stack):
+def get_correct_first_indices_stat(op_correct_stack):
     '''
     Parameters
     -----
@@ -187,7 +187,10 @@ def get_correct_first_index_stat(op_correct_stack):
 
     Returns
     -----
-    mean_correct_index : tf.Tensor. shape == (1)
+    (mean_correct_indices,
+        std_correct_indices,
+        min_correct_indices,
+        max_correct_indices) : tf.Tensor. shape == (1)
 
     This function is adopted from the following link.
     https://stackoverflow.com/questions/42184663/how-to-find-an-index-of-the-first-matching-element-in-tensorflow
@@ -197,12 +200,12 @@ def get_correct_first_index_stat(op_correct_stack):
     correct_indices = tf.cast(tf.segment_min(tmp_indices[:, 1], tmp_indices[:, 0]), tf.float32)
     no_indices = tf.equal(tf.shape(correct_indices),0)
 
-    mean_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_mean(correct_indices))
-    std_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_std(correct_indices))
-    min_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
-    max_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
+    mean_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_mean(correct_indices))
+    std_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_std(correct_indices))
+    min_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
+    max_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
 
-    return (mean_correct_index, std_correct_index, min_correct_index, max_correct_index)
+    return (mean_correct_indices, std_correct_indices, min_correct_indices, max_correct_indices)
 
 
 def find_index(tensor, value=1):
