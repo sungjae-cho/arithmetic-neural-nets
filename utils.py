@@ -198,7 +198,7 @@ def get_mean_correct_first_index(op_correct_stack):
     mean_correct_index = tf.reduce_mean(tf.cast(correct_indices, tf.float32))
     mean_correct_index = tf.cond(
         tf.is_nan(mean_correct_index),
-        lambda: 0.0,
+        lambda: -1.0,
         lambda: mean_correct_index)
 
     return mean_correct_index
