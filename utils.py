@@ -179,7 +179,7 @@ def get_op_correct(targets, predictions):
     return op_correct
 
 
-def get_mean_correct_first_index(op_correct_stack):
+def get_correct_first_index_stat(op_correct_stack):
     '''
     Parameters
     -----
@@ -194,14 +194,15 @@ def get_mean_correct_first_index(op_correct_stack):
     '''
     correct_val = 1
     tmp_indices = tf.where(tf.equal(op_correct_stack, correct_val))
-    correct_indices = tf.segment_min(tmp_indices[:, 1], tmp_indices[:, 0])
-    mean_correct_index = tf.reduce_mean(tf.cast(correct_indices, tf.float32))
-    mean_correct_index = tf.cond(
-        tf.is_nan(mean_correct_index),
-        lambda: -1.0,
-        lambda: mean_correct_index)
+    correct_indices = tf.cast(tf.segment_min(tmp_indices[:, 1], tmp_indices[:, 0]), tf.float32)
+    no_indices = tf.equal(tf.shape(correct_indices),0)
 
-    return mean_correct_index
+    mean_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_mean(correct_indices))
+    std_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_std(correct_indices))
+    min_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
+    max_correct_index = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
+
+    return (mean_correct_index, std_correct_index, min_correct_index, max_correct_index)
 
 
 def find_index(tensor, value=1):
