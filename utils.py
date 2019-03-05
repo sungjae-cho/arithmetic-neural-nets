@@ -196,7 +196,11 @@ def get_mean_correct_first_index(op_correct_stack):
     tmp_indices = tf.where(tf.equal(op_correct_stack, correct_val))
     correct_indices = tf.segment_min(tmp_indices[:, 1], tmp_indices[:, 0])
     mean_correct_index = tf.reduce_mean(tf.cast(correct_indices, tf.float32))
-
+    mean_correct_index = tf.cond(
+        tf.is_nan(mean_correct_index),
+        lambda: tf.zeros((1)),
+        lambda: mean_correct_index)
+        
     return mean_correct_index
 
 
