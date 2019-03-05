@@ -198,7 +198,7 @@ def get_correct_first_indices_stat(op_correct_stack):
     correct_val = 1
     tmp_indices = tf.where(tf.equal(op_correct_stack, correct_val))
     correct_indices = tf.cast(tf.segment_min(tmp_indices[:, 1], tmp_indices[:, 0]), tf.float32)
-    no_indices = tf.equal(tf.shape(correct_indices),0)
+    no_indices = tf.equal(tf.shape(correct_indices)[0], 0)
 
     mean_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_mean(correct_indices))
     std_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_std(correct_indices))
