@@ -202,7 +202,7 @@ def get_correct_first_indices_stat(op_correct_stack):
 
     mean_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_mean(correct_indices))
     #std_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_std(correct_indices)) # Above 1.13 version
-    min_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
+    min_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_min(correct_indices))
     max_correct_indices = tf.cond(no_indices, lambda: -1.0, lambda: tf.reduce_max(correct_indices))
 
     return (mean_correct_indices, min_correct_indices, max_correct_indices)
