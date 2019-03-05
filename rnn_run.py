@@ -352,7 +352,9 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         #op_correct_indices = utils.find_index(op_correct_stack)
         op_accuracy = utils.get_seq_accuracy(op_correct_stack)
         op_wrong = utils.get_seq_wrong(op_correct_stack)
-        mean_correct_first_index = utils.get_mean_correct_first_index(op_correct_stack)
+        (mean_correct_indices, std_correct_indices,
+            min_correct_indices, max_correct_indices
+            ) = utils.get_correct_first_indices_stat(op_correct_stack)
 
         # Loss: objective function
         with tf.name_scope('loss'):
@@ -416,7 +418,11 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
                 # add per_digit_correct
 
     if nn_model_type == 'rnn':
-        tf.summary.scalar('mean_correct_first_index', mean_correct_first_index)
+        with tf.name_scope('correct_first_indices'):
+            tf.summary.scalar('mean', mean_correct_indices)
+            tf.summary.scalar('std', std_correct_indices)
+            tf.summary.scalar('min', min_correct_indices)
+            tf.summary.scalar('max', max_correct_indices)
 
     # Merge summary operations
     merged_summary_op = tf.summary.merge_all()
