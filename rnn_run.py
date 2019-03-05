@@ -357,6 +357,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
         # Loss: objective function
         with tf.name_scope('loss'):
             losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in logits_series]
+            losses = tf.stack(losses)
             loss = tf.reduce_mean(losses)
     # Creating a graph for a Jordan RNN ###############################################
 
