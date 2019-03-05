@@ -344,7 +344,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
             predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
             op_correct = utils.get_op_correct(targets, predictions)
 
-            logits_series.append(sigmoid_outputs)
+            logits_series.append(last_logits)
             predictions_series.append(predictions)
             op_correct_series.append(op_correct)
 
