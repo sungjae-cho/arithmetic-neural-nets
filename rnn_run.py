@@ -13,16 +13,18 @@ def main():
     experiment_name = sys.argv[1]
     operand_bits =  int(sys.argv[2])
     operator =  sys.argv[3]
-    hidden_units =  int(sys.argv[4])
-    str_device_num = str(int(sys.argv[5]))
+    str_activation = sys.argv[4]
+    hidden_units =  int(sys.argv[5])
+    str_device_num = str(int(sys.argv[6]))
     nn_model_type = 'rnn'
     on_tlu = config.on_tlu()
-    mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
-        nn_model_type, on_tlu)
+    mlp_run(experiment_name, operand_bits, operator, str_activation,
+        hidden_units, str_device_num, nn_model_type, on_tlu)
 
 
-def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_num,
-    nn_model_type, on_tlu):
+def mlp_run(experiment_name, operand_bits, operator, str_activation,
+    hidden_units, str_device_num, nn_model_type, on_tlu):
+    
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
         _, _, _ = sess.run([loss, op_accuracy, train_op],
                             feed_dict={inputs:batch_input, targets:batch_target,
