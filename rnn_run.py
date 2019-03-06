@@ -24,7 +24,7 @@ def main():
 
 def mlp_run(experiment_name, operand_bits, operator, str_activation,
     hidden_units, str_device_num, nn_model_type, on_tlu):
-    
+
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
         _, _, _ = sess.run([loss, op_accuracy, train_op],
                             feed_dict={inputs:batch_input, targets:batch_target,
@@ -245,8 +245,9 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         all_correct_stop = False
 
     # Hyperparameters - model
-    activation = config.activation() # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
-    str_activation = utils.get_str_activation(activation)
+    #activation = config.activation() # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
+    #str_activation = utils.get_str_activation(activation)
+    activation = utils.get_tf_activation(str_activation)
     h_layer_dims = [hidden_units] # h_layer_dims[0]: dim of h1 layer
     last_size = NN_OUTPUT_DIM
 
