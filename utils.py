@@ -383,6 +383,17 @@ def get_str_activation(tf_activation):
     return str_activation
 
 
+def get_tf_activation(str_activation):
+    if str_activation == 'sigmoid':
+        tf_activation = tf.nn.sigmoid
+    if str_activation == 'tanh':
+        tf_activation = tf.nn.tanh
+    if str_activation == 'relu':
+        tf_activation = tf.nn.relu
+
+    return tf_activation
+
+
 def init_run_info(NN_OUTPUT_DIM):
     # Initialize an empty dictionary
     run_info = dict()
