@@ -329,6 +329,28 @@ def tf_tlu(x, name=None):
     return tf.cast(tf.greater(x, 0.5), tf.float32, name=name)
 
 
+def tf_confidence(x, radius=0.2, name=None):
+    '''
+    If all elements of `x` are ouf of the range [0.5 - radius, 0.5 + radius],
+    this function returns `True`. Otherwise, it returns `False`. 
+
+    Parameters
+    -----
+    x : tf.Tensor.
+    radius : int.
+    name : str.
+
+    Returns
+    ------
+    in_confidence : tf.Tensor. tf.bool elements. shape == (1)
+    '''
+    in_upper_side = tf.greater(x, 0.5 + radius)
+    in_lower_side = tf.less(x, 0.5 - radius)
+    in_confidence = tf.cast(tf.logical_or(in_upper_side, in_lower_side), tf.int32)
+    in_confidence = tf.cast(tf.reduce_sum(in_confidence), tf.bool, name=name)
+    return in_confidence
+
+
 def get_2d_inputs(inputs_1d):
     '''
     inputs_1d
