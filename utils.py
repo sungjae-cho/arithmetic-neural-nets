@@ -332,22 +332,23 @@ def tf_tlu(x, name=None):
 def tf_confidence(x, radius=0.2, name=None):
     '''
     If all elements of `x` are ouf of the range [0.5 - radius, 0.5 + radius],
-    this function returns `True`. Otherwise, it returns `False`. 
+    this function returns `True`. Otherwise, it returns `False`.
 
     Parameters
     -----
-    x : tf.Tensor.
-    radius : int.
+    x : tf.Tensor. shape == (n_examples, output_dim).
+    radius : int. nonnegative integer.
     name : str.
 
     Returns
     ------
-    in_confidence : tf.Tensor. tf.bool elements. shape == (1)
+    in_confidence : tf.Tensor. tf.bool elements. shape == (n_examples).
     '''
     in_upper_side = tf.greater(x, 0.5 + radius)
     in_lower_side = tf.less(x, 0.5 - radius)
     in_confidence = tf.cast(tf.logical_or(in_upper_side, in_lower_side), tf.int32)
-    in_confidence = tf.cast(tf.reduce_sum(in_confidence), tf.bool, name=name)
+    in_confidence = tf.cast(tf.reduce_prod(in_confidence, axis=1), tf.bool, name=name)
+
     return in_confidence
 
 
