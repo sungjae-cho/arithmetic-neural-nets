@@ -326,7 +326,7 @@ def create_dir(directory):
 
 
 def tf_tlu(x, name=None):
-    return tf.cast(tf.greater(x, tf.ones_like(x) * 0.5), tf.float32, name=name)
+    return tf.cast(tf.greater(x, 0.5), tf.float32, name=name)
 
 
 def get_2d_inputs(inputs_1d):
