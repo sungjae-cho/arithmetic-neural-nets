@@ -326,15 +326,19 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     if nn_model_type == 'rnn':
         init_output_val = 0.5 # 0.5 means being uncertain about decision of 0 or 1.
         sigmoid_outputs = tf.fill(tf.shape(targets), init_output_val, name="sigmoid_outputs")
+        # confidence_mask stands for
+        # whether the network has faced any confident prediction at the previous steps.
+        # 1 means it has faced a confident prediction, and 0 does not.
+        confidence_mask = tf.ones(tf.shape(targets)[0])
 
         # Forward pass
-        logits_series = []
-        predictions_series = []
-        op_correct_series = []
+        answer_mask_series = [] # To make answer_step_indices
+        answer_masked_last_logits_series = []
 
         # Sequential computation
         for t in range(config.max_time()):
             # t varies from 0 to (max_time - 1)
+            # Jordan RNN at step t.
             input_and_prob_concat = tf.concat([inputs, sigmoid_outputs], axis=1)  # Increasing number of columns
 
             with tf.name_scope('layer1'):
@@ -343,26 +347,50 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
             with tf.name_scope('layer2'):
                 last_logits = tf.add(tf.matmul(h1,  W2), b2)
                 sigmoid_outputs = tf.sigmoid(last_logits)
+            ##### Jordan RNN at step t.
 
-            predictions = utils.tf_tlu(sigmoid_outputs, name='predictions')
-            op_correct = utils.get_op_correct(targets, predictions)
+            # Compute answer_mask.
+            if t < config.max_time() - 1:
+                # All steps except the last step.
+                confidence = utils.tf_confidence(sigmoid_outputs, radius=0.3)
+                answer_mask = confidence_mask * confidence
+                confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
+            else:
+                # The last last step
+                # If there is no confident prediction until the step right before the last step,
+                # answer at the last step.
+                answer_mask = confidence_mask
 
-            logits_series.append(last_logits)
-            predictions_series.append(predictions)
-            op_correct_series.append(op_correct)
+            answer_mask_series.append(answer_mask)
 
-        op_correct_stack = tf.stack(op_correct_series, axis=1)
-        #op_correct_indices = utils.find_index(op_correct_stack)
-        op_accuracy = utils.get_seq_accuracy(op_correct_stack)
-        op_wrong = utils.get_seq_wrong(op_correct_stack)
-        (mean_correct_indices, min_correct_indices, max_correct_indices
-            ) = utils.get_correct_first_indices_stat(op_correct_stack)
+            answer_mask_2d = tf.reshape(answer_mask, (tf.shape(answer_mask)[0], -1))
+            answer_masked_last_logits = answer_mask_2d * last_logits
+            answer_masked_last_logits_series.append(answer_masked_last_logits)
+
+        # Make answer_step_indices.
+        answer_mask_stack = tf.stack(answer_mask_series, axis=0)
+        answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32)
+        # Get statistics of answer_step_indices
+        mean_answer_step_indices = tf.reduce_mean(answer_step_indices)
+        min_answer_step_indices = tf.reduce_min(answer_step_indices)
+        max_answer_step_indices = tf.reduce_max(answer_step_indices)
+
+        # Make answer_last_logits that contains last_logits of all answers.
+        answer_masked_last_logits_stack = tf.stack(answer_masked_last_logits_series, axis=0)
+        answer_last_logits = tf.reduce_sum(answer_masked_last_logits_stack, axis=0)
+        # Get predictions of all last_logits
+        answer_sigmoid_outputs = tf.sigmoid(answer_last_logits)
+        answer_predictions = utils.tf_tlu(answer_sigmoid_outputs, name='answer_predictions')
+
+        (op_accuracy, op_wrong, op_correct,
+         digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
+         per_digit_accuracy, per_digit_wrong, per_digit_correct
+        ) = utils.get_measures(targets, answer_predictions)
 
         # Loss: objective function
         with tf.name_scope('loss'):
-            losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in logits_series]
-            losses = tf.stack(losses)
-            loss = tf.reduce_mean(losses)
+            loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=answer_last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
+            loss = tf.reduce_mean(loss)
     # Creating a graph for a Jordan RNN ###############################################
 
     # Weight regularization part
@@ -420,11 +448,11 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
                 # add per_digit_correct
 
     if nn_model_type == 'rnn':
-        with tf.name_scope('correct_first_indices'):
-            tf.summary.scalar('mean', mean_correct_indices)
+        with tf.name_scope('answer_step_indices'):
+            tf.summary.scalar('mean', mean_answer_step_indices)
             #tf.summary.scalar('std', std_correct_indices)
-            tf.summary.scalar('min', min_correct_indices)
-            tf.summary.scalar('max', max_correct_indices)
+            tf.summary.scalar('min', min_answer_step_indices)
+            tf.summary.scalar('max', max_answer_step_indices)
 
     # Merge summary operations
     merged_summary_op = tf.summary.merge_all()
@@ -490,7 +518,7 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     tf_config = tf.ConfigProto()
     tf_config.gpu_options.allow_growth = True
 
-    print("Run ID: {}".format(run_id))
+    print("\nRun ID: {}".format(run_id))
     print(logdir)
     print(dir_saved_model)
 
