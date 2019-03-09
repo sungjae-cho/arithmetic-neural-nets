@@ -39,7 +39,7 @@ experiment 'subtract' 0 &
 sleep $sleep_sec
 experiment 'divide' 1 &
 sleep $sleep_sec
-experiment 'multiply' 0 &
-sleep $sleep_sec
 experiment 'modulo' 1 &
+sleep $sleep_sec
+experiment 'multiply' 0 &
 sleep $sleep_sec
