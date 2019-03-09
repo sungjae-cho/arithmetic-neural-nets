@@ -331,8 +331,11 @@ def tf_tlu(x, name=None):
 
 def tf_confidence(x, confidence_prob=0.8, name=None):
     '''
-    If all elements of `x` are ouf of the range [0.5 - radius, 0.5 + radius],
-    this function returns `True`. Otherwise, it returns `False`.
+    If predicted probability is over 0.8, then make a positive decicsion.
+    If the probability is less than 0.2, then make a negative decision.
+    Otherwise, make no decision.
+    Say, the first and second cases are in a confident state,
+    and the last case is not.
 
     Parameters
     -----
