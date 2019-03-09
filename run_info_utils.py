@@ -4,16 +4,17 @@ import operator
 import config
 from pprint import pprint
 from os import listdir
-from os.path import isfile, isdir, join 
+from os.path import isfile, isdir, join
 from collections import Counter
 
 
 def get_run_info_dir_path(experiment_name):
-    return '{}/{}'.format(config.dir_run_info_experiments(), experiment_name)
+    return join(config.dir_run_info_experiments(), experiment_name)
 
 def get_run_info_path(run_id, experiment_name):
     run_info_dir_path = get_run_info_dir_path(experiment_name)
-    return '{}/run-{}.pickle'.format(run_info_dir_path, run_id)
+    run_info_file = 'run-{}.pickle'.format(run_id)
+    return join(run_info_dir_path, run_info_file)
 
 def get_run_info(run_id, experiment_name):
     run_info_path = get_run_info_path(run_id, experiment_name)
