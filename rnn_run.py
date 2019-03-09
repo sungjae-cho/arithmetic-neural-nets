@@ -15,15 +15,16 @@ def main():
     operator =  sys.argv[3]
     str_activation = sys.argv[4]
     hidden_units =  int(sys.argv[5])
-    str_device_num = str(int(sys.argv[6]))
+    confidence_prob = float(sys.argv[6])
+    str_device_num = str(int(sys.argv[7]))
     nn_model_type = 'rnn'
     on_tlu = config.on_tlu()
     mlp_run(experiment_name, operand_bits, operator, str_activation,
-        hidden_units, str_device_num, nn_model_type, on_tlu)
+        hidden_units, confidence_prob, str_device_num, nn_model_type, on_tlu)
 
 
 def mlp_run(experiment_name, operand_bits, operator, str_activation,
-    hidden_units, str_device_num, nn_model_type, on_tlu):
+    hidden_units, confidence_prob, str_device_num, nn_model_type, on_tlu):
 
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
         _, _, _ = sess.run([loss, op_accuracy, train_op],
@@ -363,7 +364,7 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
             # Compute answer_mask.
             if t < config.max_time() - 1:
                 # All steps except the last step.
-                confidence = utils.tf_confidence(sigmoid_outputs, confidence_prob=0.7)
+                confidence = utils.tf_confidence(sigmoid_outputs, confidence_prob=confidence_prob)
                 answer_mask = confidence_mask * confidence
                 confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
             else:
