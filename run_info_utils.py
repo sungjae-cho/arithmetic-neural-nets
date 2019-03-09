@@ -4,7 +4,7 @@ import operator
 import config
 from pprint import pprint
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, isdir, join 
 from collections import Counter
 
 
@@ -30,6 +30,11 @@ def is_all_correct(run_info):
         return True
     else:
         return False
+
+def get_all_experiment_names():
+    dir_run_info_experiments = config.dir_run_info_experiments()
+    experiment_dirs = [f for f in listdir(dir_run_info_experiments) if isdir(join(dir_run_info_experiments, f))]
+    return experiment_dirs
 
 def get_all_run_info_files(experiment_name):
     run_info_dir_path = get_run_info_dir_path(experiment_name)
