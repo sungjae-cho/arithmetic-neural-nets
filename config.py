@@ -58,7 +58,7 @@ def big_batch_saturation():
     return False
 
 def activation():
-    return tf.nn.sigmoid # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
+    return tf.nn.relu # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
 
 def decreasing_dev_summary_period():
     return False
@@ -77,10 +77,14 @@ def on_tlu():
     return False
 
 def on_carry_datasets_summary():
-    return False
+    return True
 
 def max_time():
-    return 30
+    return 20
+
+def rnn_type():
+    #return 'elman'
+    return 'jordan'
 
 '''operators_list = ['add', 'subtract', 'multiply', 'divide', 'modulo']
 operand_digits_list = [4, 6, 8]
