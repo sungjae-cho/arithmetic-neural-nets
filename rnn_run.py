@@ -231,7 +231,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     if nn_model_type == 'mlp':
         NN_INPUT_DIM = input_train.shape[1]
     if nn_model_type == 'rnn':
-        NN_INPUT_DIM = input_train.shape[1] + target_train.shape[1]
+        if config.rnn_type() == 'jordan':
+            NN_INPUT_DIM = input_train.shape[1] + target_train.shape[1]
+        if config.rnn_type() == 'elman':
+            NN_INPUT_DIM = input_train.shape[1] + hidden_units
     NN_OUTPUT_DIM = target_train.shape[1]
 
     # Hyperparameters - training
@@ -325,7 +328,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     # Creating a graph for a Jordan RNN ###############################################
     if nn_model_type == 'rnn':
         init_output_val = 0.5 # 0.5 means being uncertain about decision of 0 or 1.
-        sigmoid_outputs = tf.fill(tf.shape(targets), init_output_val, name="sigmoid_outputs")
+        if config.rnn_type() == 'jordan':
+            sigmoid_outputs = tf.fill(tf.shape(targets), init_output_val, name="sigmoid_outputs")
+        if config.rnn_type() == 'elman':
+            h1 = tf.zeros(shape=[tf.shape(targets)[0], hidden_units])
         # confidence_mask stands for
         # whether the network has faced any confident prediction at the previous steps.
         # 1 means it has faced a confident prediction, and 0 does not.
@@ -338,11 +344,16 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         # Sequential computation
         for t in range(config.max_time()):
             # t varies from 0 to (max_time - 1)
-            # Jordan RNN at step t.
-            input_and_prob_concat = tf.concat([inputs, sigmoid_outputs], axis=1)  # Increasing number of columns
+            # RNN at step t.
+            if config.rnn_type() == 'jordan':
+                input_and_prob_concat = tf.concat([inputs, sigmoid_outputs], axis=1)  # Increasing number of columns
+                input_to_h1 = input_and_prob_concat
+            if config.rnn_type() == 'elman':
+                input_and_h1_concat = tf.concat([inputs, h1], axis=1) # Increasing number of columns
+                input_to_h1 = input_and_h1_concat
 
             with tf.name_scope('layer1'):
-                h1 = activation(tf.add(tf.matmul(input_and_prob_concat, W1), b1))  # Broadcasted addition
+                h1 = activation(tf.add(tf.matmul(input_to_h1, W1), b1))  # Broadcasted addition
 
             with tf.name_scope('layer2'):
                 last_logits = tf.add(tf.matmul(h1,  W2), b2)
