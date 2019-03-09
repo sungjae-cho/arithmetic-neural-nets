@@ -363,7 +363,7 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
             # Compute answer_mask.
             if t < config.max_time() - 1:
                 # All steps except the last step.
-                confidence = utils.tf_confidence(sigmoid_outputs, radius=0.3)
+                confidence = utils.tf_confidence(sigmoid_outputs, confidence_prob=0.7)
                 answer_mask = confidence_mask * confidence
                 confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
             else:
