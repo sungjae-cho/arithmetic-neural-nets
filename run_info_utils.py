@@ -2,11 +2,28 @@ import pickle
 import pandas as pd
 import operator
 import config
+import utils
 from pprint import pprint
 from os import listdir
 from os.path import isfile, isdir, join
 from collections import Counter
+from pandas import ExcelWriter
 
+
+def get_df_run_info():
+    experiment_names = get_all_experiment_names()
+
+    all_run_info_files = list()
+    for experiment_name in experiment_names:
+        all_run_info_files += get_all_run_info_files(experiment_name)
+
+    run_info_list = list()
+    for run_info_file in all_run_info_files:
+        run_info_list.append(read_run_info_file(run_info_file))
+
+    df = pd.DataFrame(run_info_list)
+
+    return df
 
 def get_run_info_dir_path(experiment_name):
     return join(config.dir_run_info_experiments(), experiment_name)
@@ -46,6 +63,24 @@ def read_run_info_file(run_info_path):
     with open (run_info_path, 'rb') as f:
         run_info = pickle.load(f)
     return run_info
+
+def run_info_to_files():
+    df_run_info = get_df_run_info()
+
+    dir_to_save = config.dir_run_info_experiments()
+    utils.create_dir(dir_to_save)
+    excel_path = join(dir_to_save, 'df_run_info.xlsx')
+    csv_path = join(dir_to_save, 'df_run_info.csv')
+
+    # dataframe to an excel file.
+    writer = ExcelWriter(excel_path)
+    df_run_info.to_excel(writer, 'run_info')
+    writer.save()
+    print('The dataframe has saved as {}.'.format(excel_path))
+
+    # dataframe to a CSV file.
+    df_run_info.to_csv(csv_path, sep=',')
+    print('The dataframe has saved as {}.'.format(csv_path))
 
 
 def import_all_run_info(experiment_name, operator=None, all_correct=None):
