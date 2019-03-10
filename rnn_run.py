@@ -53,7 +53,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
 
     def write_dev_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
 
-        dev_loss, dev_accuracy, merged_summary_op_val, dev_op_wrong_val = sess.run(
+        [dev_loss, dev_accuracy, merged_summary_op_val, dev_op_wrong_val,
+            dev_mean_answer_step_val,
+            dev_min_answer_step_val,
+            dev_max_answer_step_val] = sess.run(
             compute_nodes,
             feed_dict={inputs:input_dev, targets:target_dev,
                        condition_tlu:False,
@@ -65,10 +68,14 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         ##print("└ epoch: {}, step: {}, dev_loss: {}, dev_accuracy: {}, op_wrong: {}".format(epoch, step, dev_loss, dev_accuracy, op_wrong_val))
         dev_summary_writer.add_summary(merged_summary_op_val, step)
 
-        return (dev_loss, dev_accuracy, dev_op_wrong_val)
+        return (dev_loss, dev_accuracy, dev_op_wrong_val,
+            dev_mean_answer_step_val,
+            dev_min_answer_step_val,
+            dev_max_answer_step_val)
 
     def write_tlu_dev_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
-        dev_loss_tlu, dev_accuracy_tlu, merged_summary_op_val, dev_op_wrong_val_tlu, _, _ = sess.run(
+        [dev_loss_tlu, dev_accuracy_tlu, merged_summary_op_val, dev_op_wrong_val_tlu,
+            _, _, _] = sess.run(
             compute_nodes,
             feed_dict={inputs:input_dev, targets:target_dev,
                        condition_tlu:True,
@@ -83,7 +90,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         return (dev_loss_tlu, dev_accuracy_tlu, dev_op_wrong_val_tlu)
 
     def write_test_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
-        test_loss, test_accuracy, merged_summary_op_val, op_wrong_val = sess.run(
+        [test_loss, test_accuracy, merged_summary_op_val, op_wrong_val,
+            test_mean_answer_step_val,
+            test_min_answer_step_val,
+            test_max_answer_step_val] = sess.run(
             compute_nodes,
             feed_dict={inputs:input_test, targets:target_test,
                        condition_tlu:False,
@@ -94,7 +104,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         print("└ epoch: {}, step: {}, test_loss: {}, test_accuracy: {}, op_wrong: {}".format(epoch, step, test_loss, test_accuracy, op_wrong_val))
         test_summary_writer.add_summary(merged_summary_op_val, step)
 
-        return (test_loss, test_accuracy, op_wrong_val)
+        return (test_loss, test_accuracy, op_wrong_val,
+            test_mean_answer_step_val,
+            test_min_answer_step_val,
+            test_max_answer_step_val)
 
     def write_carry_datasets_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
         value_dict = dict()
@@ -102,7 +115,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
             carry_dataset_input = carry_datasets[n_carries]['input']
             carry_dataset_output = carry_datasets[n_carries]['output']
 
-            carry_loss_val, carry_accuracy_val, merged_summary_op_val, carry_op_wrong_val = sess.run(
+            [carry_loss_val, carry_accuracy_val, merged_summary_op_val, carry_op_wrong_val,
+                carry_mean_answer_step_val,
+                carry_min_answer_step_val,
+                carry_max_answer_step_val] = sess.run(
                 compute_nodes,
                 feed_dict={inputs:carry_dataset_input, targets:carry_dataset_output,
                            condition_tlu:False,
@@ -111,7 +127,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
                            all_correct_epoch:(all_correct_val * float_epoch),
                            all_correct:all_correct_val})
 
-            value_dict[n_carries] = (carry_loss_val, carry_accuracy_val, carry_op_wrong_val)
+            value_dict[n_carries] = (carry_loss_val, carry_accuracy_val, carry_op_wrong_val,
+                carry_mean_answer_step_val,
+                carry_min_answer_step_val,
+                carry_max_answer_step_val)
             carry_datasets_summary_writers[n_carries].add_summary(merged_summary_op_val, step)
 
         return value_dict
@@ -469,7 +488,6 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     # Merge summary operations
     merged_summary_op = tf.summary.merge_all()
 
-
     run_info = utils.init_run_info(NN_OUTPUT_DIM)
 
     # Experiment info
@@ -481,15 +499,21 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     run_info['result_bits'] = target_train.shape[1]
 
     # Network info
+    run_info['nn_model_type'] = nn_model_type
+    if nn_model_type == 'rnn':
+        run_info['rnn_type'] = config.rnn_type()
+        run_info['confidence_prob'] = confidence_prob
     run_info['network_input_dimension'] = input_train.shape[1]
     run_info['network_output_dimension'] = target_train.shape[1]
     run_info['hidden_activation'] = str_activation
     run_info['hidden_dimensions'] = h_layer_dims
 
+
     # Dataset info
     run_info['train_set_size'] = input_train.shape[0]
     run_info['dev_set_size'] = input_dev.shape[0]
     run_info['test_set_size'] = input_test.shape[0]
+    run_info['train_dev_test_ratio'] = config.dataset_ratio()
 
     # Optimizer info
     run_info['batch_size'] = batch_size
@@ -523,8 +547,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     # Compute nodes
     train_compute_nodes = [loss, op_accuracy, merged_summary_op]
     #dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong, per_digit_accuracy, per_digit_wrong]
-    dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong]
-    test_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong]
+    dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong,
+        mean_answer_step_indices, min_answer_step_indices, max_answer_step_indices]
+    test_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong,
+        mean_answer_step_indices, min_answer_step_indices, max_answer_step_indices]
 
     # Session configuration
     tf_config = tf.ConfigProto()
@@ -584,7 +610,8 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
                 # After dev_summary_period batches are trained
                 if (step % dev_summary_period == 0) or is_last_batch(i_batch):
                     # dev set summary writer#############################################################
-                    dev_run_outputs = (dev_loss_val, dev_accuracy_val, dev_op_wrong_val) = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                    dev_run_outputs = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                    (_, dev_accuracy_val, dev_op_wrong_val, _, _, _) = dev_run_outputs
 
                     # carry datasets summary writer #####################################################
                     if (operator in config.operators_list()) and config.on_carry_datasets_summary():
@@ -594,7 +621,7 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
                     # TLU-dev summary writer#############################################################
                     # on_tlu
                     if on_tlu:
-                        dev_tlu_run_outputs = (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                        dev_tlu_run_outputs = (_, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
                     else:
                         dev_tlu_run_outputs = None
 
@@ -644,7 +671,11 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         # Test loss evalution
         # Run computing test loss, accuracy
         # test set summary writer#############################################################
-        (test_loss, test_accuracy, test_op_wrong_val) = write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
+        (test_loss, test_accuracy, test_op_wrong_val,
+            test_mean_answer_step_val,
+            test_min_answer_step_val,
+            test_max_answer_step_val
+            ) = write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
 
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")

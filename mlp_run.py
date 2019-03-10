@@ -378,6 +378,7 @@ def mlp_run(experiment_name, operand_bits, operator, hidden_units, str_device_nu
     run_info['result_bits'] = target_train.shape[1]
 
     # Network info
+    run_info['nn_model_type'] = nn_model_type
     run_info['network_input_dimension'] = input_train.shape[1]
     run_info['network_output_dimension'] = target_train.shape[1]
     run_info['hidden_activation'] = str_activation
