@@ -13,17 +13,18 @@ def main():
     experiment_name = sys.argv[1]
     operand_bits =  int(sys.argv[2])
     operator =  sys.argv[3]
-    str_activation = sys.argv[4]
-    hidden_units =  int(sys.argv[5])
-    confidence_prob = float(sys.argv[6])
-    str_device_num = str(int(sys.argv[7]))
+    rnn_type = sys.argv[4]
+    str_activation = sys.argv[5]
+    hidden_units =  int(sys.argv[6])
+    confidence_prob = float(sys.argv[7])
+    str_device_num = str(int(sys.argv[8]))
     nn_model_type = 'rnn'
     on_tlu = config.on_tlu()
-    mlp_run(experiment_name, operand_bits, operator, str_activation,
+    mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         hidden_units, confidence_prob, str_device_num, nn_model_type, on_tlu)
 
 
-def mlp_run(experiment_name, operand_bits, operator, str_activation,
+def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     hidden_units, confidence_prob, str_device_num, nn_model_type, on_tlu):
 
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
@@ -251,9 +252,9 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     if nn_model_type == 'mlp':
         NN_INPUT_DIM = input_train.shape[1]
     if nn_model_type == 'rnn':
-        if config.rnn_type() == 'jordan':
+        if rnn_type == 'jordan':
             NN_INPUT_DIM = input_train.shape[1] + target_train.shape[1]
-        if config.rnn_type() == 'elman':
+        if rnn_type == 'elman':
             NN_INPUT_DIM = input_train.shape[1] + hidden_units
     NN_OUTPUT_DIM = target_train.shape[1]
 
@@ -348,9 +349,9 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     # Creating a graph for a Jordan RNN ###############################################
     if nn_model_type == 'rnn':
         init_output_val = 0.5 # 0.5 means being uncertain about decision of 0 or 1.
-        if config.rnn_type() == 'jordan':
+        if rnn_type == 'jordan':
             sigmoid_outputs = tf.fill(tf.shape(targets), init_output_val, name="sigmoid_outputs")
-        if config.rnn_type() == 'elman':
+        if rnn_type == 'elman':
             h1 = tf.zeros(shape=[tf.shape(targets)[0], hidden_units])
         # confidence_mask stands for
         # whether the network has faced any confident prediction at the previous steps.
@@ -365,10 +366,10 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
         for t in range(config.max_time()):
             # t varies from 0 to (max_time - 1)
             # RNN at step t.
-            if config.rnn_type() == 'jordan':
+            if rnn_type == 'jordan':
                 input_and_prob_concat = tf.concat([inputs, sigmoid_outputs], axis=1)  # Increasing number of columns
                 input_to_h1 = input_and_prob_concat
-            if config.rnn_type() == 'elman':
+            if rnn_type == 'elman':
                 input_and_h1_concat = tf.concat([inputs, h1], axis=1) # Increasing number of columns
                 input_to_h1 = input_and_h1_concat
 
@@ -501,7 +502,7 @@ def mlp_run(experiment_name, operand_bits, operator, str_activation,
     # Network info
     run_info['nn_model_type'] = nn_model_type
     if nn_model_type == 'rnn':
-        run_info['rnn_type'] = config.rnn_type()
+        run_info['rnn_type'] = rnn_type
         run_info['confidence_prob'] = confidence_prob
     run_info['network_input_dimension'] = input_train.shape[1]
     run_info['network_output_dimension'] = target_train.shape[1]
