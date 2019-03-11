@@ -476,7 +476,7 @@ def write_run_info(run_info, float_epoch,
         run_info['last_tlu_test_loss'] = dev_loss_tlu_val
         run_info['last_tlu_test_accuracy'] = dev_accuracy_tlu_val
         run_info['last_tlu_op_wrong'] = dev_op_wrong_tlu_val
-    if len(dev_run_outputs) == 5:
+    if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             run_info['last_digit-{}_accuracy'.format(i+1)] = per_digit_accuracy_val[-(i+1)]
             run_info['last_digit-{}_wrong'.format(i+1)] = per_digit_wrong_val[-(i+1)]
@@ -501,7 +501,7 @@ def write_run_info(run_info, float_epoch,
         run_info['init_all_correct_epoch'] = float_epoch
 
     # The float epoch of all correct digit
-    if len(dev_run_outputs) == 5:
+    if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             # init_all_correct: the initial time to attain all correct digit outputs.
             init_all_correct_key = 'init_all_correct_digit-{}_epoch'.format(i+1)
@@ -575,7 +575,7 @@ def write_measures(run_info, float_epoch,
             measure_logs['tlu_test_loss'] = list()
             measure_logs['tlu_test_accuracy'] = list()
             measure_logs['tlu_op_wrong'] = list()
-        if len(dev_run_outputs) == 5:
+        if run_info['nn_model_type'] == 'mlp':
             for i in range(len(per_digit_wrong_val)):
                 measure_logs['digit-{}_accuracy'.format(i+1)] = list()
                 measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
@@ -594,7 +594,7 @@ def write_measures(run_info, float_epoch,
         measure_logs['tlu_test_loss'].append(dev_loss_tlu_val)
         measure_logs['tlu_test_accuracy'].append(dev_accuracy_tlu_val)
         measure_logs['tlu_op_wrong'].append(dev_op_wrong_tlu_val)
-    if len(dev_run_outputs) == 5:
+    if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             measure_logs['digit-{}_accuracy'.format(i+1)].append(per_digit_accuracy_val[-(i+1)])
             measure_logs['digit-{}_op_wrong'.format(i+1)].append(per_digit_wrong_val[-(i+1)])
