@@ -174,7 +174,6 @@ def get_op_correct(targets, predictions):
     # Measure 1: (target) operation accuracy
     digits_correct = tf.reduce_sum(equal, axis=1)
     op_correct = tf.equal(digits_correct, n_dimensions)
-    op_correct = tf.cast(op_correct, tf.int32)
 
     return op_correct
 
