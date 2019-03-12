@@ -259,7 +259,7 @@ def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteratio
     target_test = np.concatenate(target_test_list, axis=0)
 
     return (input_train, input_dev, input_test,
-            target_train, target_dev, target_test, 
+            target_train, target_dev, target_test,
             splited_carry_datasets)
 
 
@@ -943,43 +943,72 @@ def plot_carry_dataset_statistics(mode='save', file_format='svg'):
 
 
 def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_ratio):
-    # Path of op_dataset
-    import_path = '{}/{}-bit/{}/op_dataset.pickle'.format(config.dir_data(), operand_digits, operator)
+    input_train_list = list()
+    input_dev_list = list()
+    input_test_list = list()
+    target_train_list = list()
+    target_dev_list = list()
+    target_test_list = list()
 
-    # Import the op_dataset
-    with open(import_path, 'rb') as f:
-        op_dataset = pickle.load(f)
+    splited_carry_datasets = dict()
 
-    # Dataset size
-    ds_size = op_dataset['input'].shape[0]
+    for carries in carry_datasets.keys():
+        # Initialize a dict for the number of carries
+        splited_carry_datasets[carries] = dict()
+        splited_carry_datasets[carries]['input'] = dict()
+        splited_carry_datasets[carries]['output'] = dict()
 
-    # Shuffle input and output data
-    randomize = np.arange(ds_size)
-    np.random.shuffle(randomize)
-    op_dataset['input'] = op_dataset['input'][randomize]
-    op_dataset['output'] = op_dataset['output'][randomize]
+        # Get the size of a carry dataset
+        carry_ds_size = carry_datasets[carries]['input'].shape[0]
 
-    # Make a training set.
-    train_end_index = int(ds_size * train_ratio)
-    input_train = op_dataset['input'][:train_end_index,:]
-    target_train = op_dataset['output'][:train_end_index,:]
+        # Shuffle input and output data
+        randomize = np.arange(carry_ds_size)
+        np.random.shuffle(randomize)
+        carry_datasets[carries]['input'] = carry_datasets[carries]['input'][randomize]
+        carry_datasets[carries]['output'] = carry_datasets[carries]['output'][randomize]
 
-    # Make a development set.
-    dev_end_index = int(ds_size * (train_ratio + dev_ratio))
+        # Make a training set.
+        train_end_index = int(carry_ds_size * train_ratio)
+        input_train = carry_datasets[carries]['input'][:train_end_index,:]
+        target_train = carry_datasets[carries]['output'][:train_end_index,:]
+        input_train_list.append(input_train)
+        target_train_list.append(target_train)
+        splited_carry_datasets[carries]['input']['train'] = input_train
+        splited_carry_datasets[carries]['output']['train'] = target_train
 
-    if dev_ratio != 0:
-        input_dev = op_dataset['input'][:dev_end_index,:]
-        target_dev = op_dataset['output'][:dev_end_index,:]
-    else:
-        input_dev = None
-        target_dev = None
 
-    # Maek a test set.
-    input_test = op_dataset['input'][dev_end_index:,:]
-    target_test = op_dataset['output'][dev_end_index:,:]
+        # Make a development set.
+        dev_end_index = int(carry_ds_size * (train_ratio + dev_ratio))
+
+        if dev_ratio != 0:
+            input_dev = carry_datasets[carries]['input'][train_end_index:dev_end_index,:]
+            target_dev = carry_datasets[carries]['output'][train_end_index:dev_end_index,:]
+            input_dev_list.append(input_dev)
+            target_dev_list.append(target_dev)
+            splited_carry_datasets[carries]['input']['dev'] = input_dev
+            splited_carry_datasets[carries]['output']['dev'] = target_dev
+        else:
+            input_dev = None
+            target_dev = None
+
+        # Maek a test set.
+        input_test = carry_datasets[carries]['input'][dev_end_index:,:]
+        target_test = carry_datasets[carries]['output'][dev_end_index:,:]
+        input_test_list.append(input_test)
+        target_test_list.append(target_test)
+        splited_carry_datasets[carries]['input']['test'] = input_test
+        splited_carry_datasets[carries]['output']['test'] = target_test
+
+    input_train = np.concatenate(input_train_list, axis=0)
+    input_dev = np.concatenate(input_dev_list, axis=0)
+    input_test = np.concatenate(input_test_list, axis=0)
+    target_train = np.concatenate(target_train_list, axis=0)
+    target_dev = np.concatenate(target_dev_list, axis=0)
+    target_test = np.concatenate(target_test_list, axis=0)
 
     return (input_train, input_dev, input_test,
-            target_train, target_dev, target_test)
+            target_train, target_dev, target_test,
+            splited_carry_datasets)
 
 
 def import_carry_datasets(operand_digits, operator, shuffled=False):
