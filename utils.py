@@ -452,9 +452,9 @@ def write_run_info(run_info, float_epoch,
          per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
     if run_info['nn_model_type'] == 'rnn':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
-            dev_mean_answer_step_val,
-            dev_min_answer_step_val,
-            dev_max_answer_step_val) = dev_run_outputs
+            dev_mean_correct_answer_step_val,
+            dev_min_correct_answer_step_val,
+            dev_max_correct_answer_step_val) = dev_run_outputs
 
     if dev_tlu_run_outputs != None and run_info['nn_model_type'] == 'mlp':
         (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = dev_tlu_run_outputs
@@ -467,9 +467,9 @@ def write_run_info(run_info, float_epoch,
     run_info['last_test_accuracy'] = dev_accuracy_val
     run_info['last_test_op_wrong'] = dev_op_wrong_val
     if run_info['nn_model_type'] == 'rnn':
-        run_info['last_test_mean_answer_step'] = dev_mean_answer_step_val
-        run_info['last_test_min_answer_step'] = dev_min_answer_step_val
-        run_info['last_test_max_answer_step'] = dev_max_answer_step_val
+        run_info['last_test_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
+        run_info['last_test_min_correct_answer_step'] = dev_min_correct_answer_step_val
+        run_info['last_test_max_correct_answer_step'] = dev_max_correct_answer_step_val
 
     if dev_tlu_run_outputs != None:
         run_info['last_tlu_test_loss'] = dev_loss_tlu_val
@@ -483,14 +483,14 @@ def write_run_info(run_info, float_epoch,
         for n_carries in carry_run_outputs.keys():
             carry_accuracy_val = carry_run_outputs[n_carries][1]
             carry_op_wrong_val = carry_run_outputs[n_carries][2]
-            carry_mean_answer_step_val = carry_run_outputs[n_carries][3]
-            carry_min_answer_step_val = carry_run_outputs[n_carries][4]
-            carry_max_answer_step_val = carry_run_outputs[n_carries][5]
+            carry_mean_correct_answer_step_val = carry_run_outputs[n_carries][3]
+            carry_min_correct_answer_step_val = carry_run_outputs[n_carries][4]
+            carry_max_correct_answer_step_val = carry_run_outputs[n_carries][5]
             run_info['last_carry-{}_accuracy'.format(n_carries)] = carry_accuracy_val
             run_info['last_carry-{}_wrong'.format(n_carries)] = carry_op_wrong_val
-            run_info['last_carry-{}_mean_answer_step'.format(n_carries)] = carry_mean_answer_step_val
-            run_info['last_carry-{}_min_answer_step'.format(n_carries)] = carry_min_answer_step_val
-            run_info['last_carry-{}_max_answer_step'.format(n_carries)] = carry_max_answer_step_val
+            run_info['last_carry-{}_mean_correct_answer_step'.format(n_carries)] = carry_mean_correct_answer_step_val
+            run_info['last_carry-{}_min_correct_answer_step'.format(n_carries)] = carry_min_correct_answer_step_val
+            run_info['last_carry-{}_max_correct_answer_step'.format(n_carries)] = carry_max_correct_answer_step_val
 
     # float epochs
     run_info['last_epoch'] = float_epoch
@@ -550,9 +550,9 @@ def write_measures(run_info, float_epoch,
          per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
     if run_info['nn_model_type'] == 'rnn':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
-            dev_mean_answer_step_val,
-            dev_min_answer_step_val,
-            dev_max_answer_step_val) = dev_run_outputs
+            dev_mean_correct_answer_step_val,
+            dev_min_correct_answer_step_val,
+            dev_max_correct_answer_step_val) = dev_run_outputs
 
     if dev_tlu_run_outputs != None:
         (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = dev_tlu_run_outputs
