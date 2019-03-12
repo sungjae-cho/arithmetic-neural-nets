@@ -110,11 +110,11 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             test_min_answer_step_val,
             test_max_answer_step_val)
 
-    def write_carry_datasets_summary(sess, compute_nodes, float_epoch, all_correct_val, step):
+    def write_carry_datasets_summary(sess, compute_nodes, float_epoch, all_correct_val, step, dataset_type='dev'):
         value_dict = dict()
-        for n_carries in carry_datasets.keys():
-            carry_dataset_input = carry_datasets[n_carries]['input']
-            carry_dataset_output = carry_datasets[n_carries]['output']
+        for n_carries in splited_carry_datasets.keys():
+            carry_dataset_input = splited_carry_datasets[n_carries]['input'][dataset_type]
+            carry_dataset_output = splited_carry_datasets[n_carries]['output'][dataset_type]
 
             [carry_loss_val, carry_accuracy_val, merged_summary_op_val, carry_op_wrong_val,
                 carry_mean_answer_step_val,
@@ -132,7 +132,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                 carry_mean_answer_step_val,
                 carry_min_answer_step_val,
                 carry_max_answer_step_val)
-            carry_datasets_summary_writers[n_carries].add_summary(merged_summary_op_val, step)
+            carry_datasets_summary_writers[n_carries][dataset_type].add_summary(merged_summary_op_val, step)
 
         return value_dict
 
@@ -180,12 +180,17 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     def create_carry_datasets_summary_writers(logdir, carry_datasets):
         carry_datasets_summary_writers = dict()
         for n_carries in carry_datasets.keys():
-            carry_datasets_summary_writers[n_carries] =  tf.summary.FileWriter(logdir + '/carry-{}'.format(n_carries))
+            carry_datasets_summary_writers[n_carries] = dict()
+            carry_datasets_summary_writers[n_carries]['train'] =  tf.summary.FileWriter(logdir + '/train/carry-{}'.format(n_carries))
+            carry_datasets_summary_writers[n_carries]['dev'] =  tf.summary.FileWriter(logdir + '/dev/carry-{}'.format(n_carries))
+            carry_datasets_summary_writers[n_carries]['test'] =  tf.summary.FileWriter(logdir + '/test/carry-{}'.format(n_carries))
         return carry_datasets_summary_writers
 
     def close_carry_datasets_summary_writers(carry_datasets_summary_writers):
         for n_carries in carry_datasets_summary_writers.keys():
-            carry_datasets_summary_writers[n_carries].close()
+            carry_datasets_summary_writers[n_carries]['train'].close()
+            carry_datasets_summary_writers[n_carries]['dev'].close()
+            carry_datasets_summary_writers[n_carries]['test'].close()
 
     def get_all_correct_val(op_wrong_val):
         if op_wrong_val == 0:
@@ -235,9 +240,6 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         splited_carry_datasets
     ) = data_utils.import_op_dataset(operator, operand_bits,
             train_ratio=train_ratio, dev_ratio=dev_ratio, test_ratio=test_ratio)
-
-    if operator in config.operators_list():
-        carry_datasets = data_utils.import_carry_datasets(operand_bits, operator)
 
     # If the training dataset takes all examples, then the dev and test datasets are the same as the training one.
     if dev_ratio == 0.0 and test_ratio == 0.0:
@@ -540,7 +542,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         tlu_summary_writer = tf.summary.FileWriter(logdir + '/tlu')
     test_summary_writer = tf.summary.FileWriter(logdir + '/test')
     if operator in config.operators_list():
-        carry_datasets_summary_writers = create_carry_datasets_summary_writers(logdir, carry_datasets)
+        carry_datasets_summary_writers = create_carry_datasets_summary_writers(logdir, splited_carry_datasets)
 
     # Model saving
     dir_saved_model = '{}/{}/{}_{}bit_{}_{}_h{}/run-{}/'.format(
@@ -621,7 +623,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
                     # carry datasets summary writer #####################################################
                     if (operator in config.operators_list()) and config.on_carry_datasets_summary():
-                        carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                        carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'dev')
+                        write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'train')
 
 
                     # TLU-dev summary writer#############################################################
@@ -682,6 +685,10 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             test_min_answer_step_val,
             test_max_answer_step_val
             ) = write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
+
+        # carry datasets summary writer #####################################################
+        if (operator in config.operators_list()) and config.on_carry_datasets_summary():
+            carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'test')
 
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")
