@@ -125,6 +125,69 @@ def get_carry_ds_stat_path():
     return carry_ds_stat_path
 
 
+def get_KL_fold_CV_sets(np_input, np_target, i_iteration, n_outer_folds=5, n_inner_folds=5):
+    '''
+    Parameters
+    -----
+    np_input : numpy.ndarray. shape=(n_examples, dim_input).
+    np_target : numpy.ndarray. shape=(n_examples, dim_target).
+    i_iteration : The iteration index of cross validation.
+     - i_iteration should range from 0 to (n_outer_folds * n_inner_folds - 1)
+    n_outer_folds : int. The number of outer folds.
+    n_inner_folds : int. The number of inner folds.
+
+    Returns
+    -----
+    (input_train, input_dev, input_test, target_train, target_dev, target_test) :
+     - For each element, numpy.ndarray. shape=(n_examples, dim).
+    '''
+    if (i_iteration < 0) or (i_iteration >= n_outer_folds * n_inner_folds):
+        raise ValueError("i_iteration should range from 0 to (n_outer_folds * n_inner_folds - 1)")
+
+    # Get the indices of outer folds and inner folds.
+    i_outer_fold = i_iteration // n_outer_folds
+    i_inner_fold = i_iteration % n_outer_folds
+
+    ds_size = np_input.shape[0]
+    outer_fold_size = ds_size // n_outer_folds
+    inner_fold_size = (ds_size - outer_fold_size) // n_inner_folds
+
+    # Get the start and end indices of the test set.
+    i_start_test = i_outer_fold * outer_fold_size
+    if i_outer_fold < n_outer_folds - 1:
+        i_end_test = (i_outer_fold + 1) * outer_fold_size
+    else:
+        # Without this flow control, the remainders are never included in the test set.
+        i_end_test = ds_size
+
+    # Get the test set.
+    input_test = np_input[i_start_test:i_end_test,:]
+    target_test = np_target[i_start_test:i_end_test,:]
+
+    # Get the inner dataset
+    inner_input_dataset = np.concatenate((np_input[:i_start_test,:], np_input[i_end_test:,:]), axis=0)
+    inner_target_dataset = np.concatenate((np_target[:i_start_test,:], np_target[i_end_test:,:]), axis=0)
+
+    # Get the inner fold size
+    inner_ds_size = inner_input_dataset.shape[0]
+    inner_fold_size = inner_ds_size // n_inner_folds
+
+    # Get the start and end indices of the dev set.
+    i_start_dev = i_inner_fold * inner_fold_size
+    i_end_dev = (i_inner_fold + 1) * inner_fold_size
+
+    # Get the dev set.
+    input_dev = inner_input_dataset[i_start_dev:i_end_dev,:]
+    target_dev = inner_target_dataset[i_start_dev:i_end_dev,:]
+
+    # Get the train set.
+    input_train = np.concatenate((inner_input_dataset[:i_start_dev,:], inner_input_dataset[i_end_dev:,:]), axis=0)
+    target_train = np.concatenate((inner_target_dataset[:i_start_dev,:], inner_target_dataset[i_end_dev:,:]), axis=0)
+
+    return (input_train, input_dev, input_test,
+            target_train, target_dev, target_test)
+
+
 def np_io2str_op(np_input, np_output, operator):
     '''
     Parameters
@@ -844,12 +907,13 @@ def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_rat
             target_train, target_dev, target_test)
 
 
-def import_carry_datasets(operand_digits, operator):
+def import_carry_datasets(operand_digits, operator, shuffled=False):
     '''
     Parameters
     ----------
     operand_digits: int. The number of digits of an operand.
     operantor: str. one of ['add', 'substract', 'multiply', 'divide', 'modulo']
+    shuffle: whether the datasets are randomly shuffled.
 
     Returns
     -------
@@ -857,7 +921,10 @@ def import_carry_datasets(operand_digits, operator):
     - carry_datasets[n_carries]['input']: shape == (n_operations, input_dim).
     - carry_datasets[n_carries]['output']: shape == (n_operations, output_dim).
     '''
-    import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
+    if shuffled:
+        import_path = 'data/{}-bit/{}/shuffled_carry_datasets.pickle'.format(operand_digits, operator)
+    else:
+        import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
 
     with open(import_path, 'rb') as f:
         carry_datasets = pickle.load(f)
