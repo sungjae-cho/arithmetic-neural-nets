@@ -518,10 +518,14 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
 
     # Dataset info
+    run_info['train_dev_test_ratio'] = config.dataset_ratio()
     run_info['train_set_size'] = input_train.shape[0]
     run_info['dev_set_size'] = input_dev.shape[0]
     run_info['test_set_size'] = input_test.shape[0]
-    run_info['train_dev_test_ratio'] = config.dataset_ratio()
+    for carries in splited_carry_datasets.keys():
+        run_info['train_set_size/carry-{}'.format(carries)] = splited_carry_datasets[carries]['input']['train'].shape[0]
+        run_info['dev_set_size/carry-{}'.format(carries)] = splited_carry_datasets[carries]['input']['dev'].shape[0]
+        run_info['test_set_size/carry-{}'.format(carries)] = splited_carry_datasets[carries]['input']['test'].shape[0]
 
     # Optimizer info
     run_info['batch_size'] = batch_size
