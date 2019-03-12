@@ -686,6 +686,18 @@ def save_random_datasets(random_datasets, operand_digits):
     print("Saved in '{}'.".format(save_path))
 
 
+def shuffle_carry_datasets(carry_datasets):
+    '''
+    Shuffle the given carry_datasets.
+    '''
+    for carries in carry_datasets.keys():
+        carry_ds_size = carry_datasets[carries]['input'].shape[0]
+        randomize = np.arange(carry_ds_size)
+        np.random.shuffle(randomize)
+        carry_datasets[carries]['input'] = carry_datasets[carries]['input'][randomize]
+        carry_datasets[carries]['output'] = carry_datasets[carries]['output'][randomize]
+
+
 def print_carry_datasets_info(carry_datasets):
     data_len_list = list()
     for key in carry_datasets.keys():
