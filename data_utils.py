@@ -640,12 +640,19 @@ def save_op_dataset(op_dataset, operand_digits, operator):
 def save_carry_datasets(carry_datasets, operand_digits, operator):
     save_dir = 'data/{}-bit/{}'.format(operand_digits, operator)
     create_dir(save_dir)
-    save_path = '{}/carry_datasets.pickle'.format(save_dir)
 
+    # Ordered carry datasets
+    save_path = '{}/carry_datasets.pickle'.format(save_dir)
     with open(save_path, 'wb') as f:
         pickle.dump(carry_datasets, f)
+    print("Carry datasets saved in '{}'.".format(save_path))
 
-    print("Saved in '{}'.".format(save_path))
+    # Ordered carry datasets
+    shuffle_carry_datasets(carry_datasets)
+    save_path = '{}/shuffled_carry_datasets.pickle'.format(save_dir)
+    with open(save_path, 'wb') as f:
+        pickle.dump(carry_datasets, f)
+    print("Shuffled carry datasets Saved in '{}'.".format(save_path))
 
 
 def save_random_datasets(random_datasets, operand_digits):
