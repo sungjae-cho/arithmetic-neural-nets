@@ -952,6 +952,8 @@ def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_rat
 
     splited_carry_datasets = dict()
 
+    carry_datasets = import_carry_datasets(operand_digits, operator)
+
     for carries in carry_datasets.keys():
         # Initialize a dict for the number of carries
         splited_carry_datasets[carries] = dict()
