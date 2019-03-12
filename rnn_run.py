@@ -399,13 +399,6 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             answer_masked_last_logits = answer_mask_2d * last_logits
             answer_masked_last_logits_series.append(answer_masked_last_logits)
 
-        # Make answer_step_indices.
-        answer_mask_stack = tf.stack(answer_mask_series, axis=0)
-        answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32)
-        # Get statistics of answer_step_indices
-        mean_answer_step_indices = tf.reduce_mean(answer_step_indices)
-        min_answer_step_indices = tf.reduce_min(answer_step_indices)
-        max_answer_step_indices = tf.reduce_max(answer_step_indices)
 
         # Make answer_last_logits that contains last_logits of all answers.
         answer_masked_last_logits_stack = tf.stack(answer_masked_last_logits_series, axis=0)
@@ -413,6 +406,17 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         # Get predictions of all last_logits
         answer_sigmoid_outputs = tf.sigmoid(answer_last_logits)
         answer_predictions = utils.tf_tlu(answer_sigmoid_outputs, name='answer_predictions')
+
+        # Make answer_step_indices.
+        answer_mask_stack = tf.stack(answer_mask_series, axis=0)
+        answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32)
+        # Get correct_answer_step_indices.
+        answer_correctness = utils.get_op_correct(targets, answer_predictions)
+        correct_answer_step_indices = tf.boolean_mask(answer_step_indices, answer_correctness)
+        # Get statistics of answer_step_indices.
+        mean_correct_answer_step_indices = tf.reduce_mean(correct_answer_step_indices)
+        min_correct_answer_step_indices = tf.reduce_min(correct_answer_step_indices)
+        max_correct_answer_step_indices = tf.reduce_max(correct_answer_step_indices)
 
         (op_accuracy, op_wrong, op_correct,
          digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
@@ -480,11 +484,11 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                 # add per_digit_correct
 
     if nn_model_type == 'rnn':
-        with tf.name_scope('answer_step_indices'):
-            tf.summary.scalar('mean', mean_answer_step_indices)
+        with tf.name_scope('correct_answer_step_indices'):
+            tf.summary.scalar('mean', mean_correct_answer_step_indices)
             #tf.summary.scalar('std', std_correct_indices)
-            tf.summary.scalar('min', min_answer_step_indices)
-            tf.summary.scalar('max', max_answer_step_indices)
+            tf.summary.scalar('min', min_correct_answer_step_indices)
+            tf.summary.scalar('max', max_correct_answer_step_indices)
 
     # Merge summary operations
     merged_summary_op = tf.summary.merge_all()
@@ -549,9 +553,9 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     train_compute_nodes = [loss, op_accuracy, merged_summary_op]
     #dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong, per_digit_accuracy, per_digit_wrong]
     dev_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong,
-        mean_answer_step_indices, min_answer_step_indices, max_answer_step_indices]
+        mean_correct_answer_step_indices, min_correct_answer_step_indices, max_correct_answer_step_indices]
     test_compute_nodes = [loss, op_accuracy, merged_summary_op, op_wrong,
-        mean_answer_step_indices, min_answer_step_indices, max_answer_step_indices]
+        mean_correct_answer_step_indices, min_correct_answer_step_indices, max_correct_answer_step_indices]
 
     # Session configuration
     tf_config = tf.ConfigProto()
