@@ -231,7 +231,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     # Import datasets
     (train_ratio, dev_ratio, test_ratio) = config.dataset_ratio()
     (input_train, input_dev, input_test,
-        target_train, target_dev, target_test
+        target_train, target_dev, target_test,
+        splited_carry_datasets
     ) = data_utils.import_op_dataset(operator, operand_bits,
             train_ratio=train_ratio, dev_ratio=dev_ratio, test_ratio=test_ratio)
 
