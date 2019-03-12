@@ -187,6 +187,54 @@ def get_KL_fold_CV_sets(np_input, np_target, i_iteration, n_outer_folds=5, n_inn
     return (input_train, input_dev, input_test,
             target_train, target_dev, target_test)
 
+def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteration, n_outer_folds=5, n_inner_folds=5):
+    '''
+    Parameters
+    -----
+    operand_digits : int. The number of each operand digits.
+    operator : str. One of 'add', 'subtract', 'multiply', 'divide', 'modulo'
+    i_iteration : The iteration index of cross validation.
+     - i_iteration should range from 0 to (n_outer_folds * n_inner_folds - 1)
+    n_outer_folds : int. The number of outer folds.
+    n_inner_folds : int. The number of inner folds.
+
+    Returns
+    -----
+    (input_train, input_dev, input_test, target_train, target_dev, target_test) :
+     - For each element, numpy.ndarray. shape=(n_examples, dim).
+    '''
+    carry_datasets = import_carry_datasets(operand_digits, operator, shuffled=True)
+
+    input_train_list = list()
+    target_train_list = list()
+    input_dev_list = list()
+    target_dev_list = list()
+    input_test_list = list()
+    target_test_list = list()
+
+    for carries in carry_datasets.keys():
+        np_input = carry_datasets[carries]['input']
+        np_target = carry_datasets[carries]['output']
+
+        (input_train, input_dev, input_test,
+         target_train, target_dev, target_test) = get_KL_fold_CV_sets(np_input, np_target, i_iteration, n_outer_folds, n_inner_folds)
+
+        input_train_list.append(input_train)
+        target_train_list.append(target_train)
+        input_dev_list.append(input_dev)
+        target_dev_list.append(target_dev)
+        input_test_list.append(input_test)
+        target_test_list.append(target_test)
+
+    input_train = np.concatenate(input_train_list, axis=0)
+    target_train = np.concatenate(target_train_list, axis=0)
+    input_dev = np.concatenate(input_dev_list, axis=0)
+    target_dev = np.concatenate(target_dev_list, axis=0)
+    input_test = np.concatenate(input_test_list, axis=0)
+    target_test = np.concatenate(target_test_list, axis=0)
+
+    return (input_train, input_dev, input_test, target_train, target_dev, target_test)
+
 
 def np_io2str_op(np_input, np_output, operator):
     '''
