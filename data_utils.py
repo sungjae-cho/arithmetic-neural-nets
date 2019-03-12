@@ -202,6 +202,17 @@ def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteratio
     -----
     (input_train, input_dev, input_test, target_train, target_dev, target_test) :
      - For each element, numpy.ndarray. shape=(n_examples, dim).
+    splited_carry_datasets : dict.
+     - {n_carries:
+            {'input': {'train': numpy.ndarray,
+                        'dev': numpy.ndarray,
+                        'test': numpy.ndarray},
+            'output': {'train': numpy.ndarray,
+                        'dev': numpy.ndarray,
+                        'test': numpy.ndarray}, ...
+            }
+        }
+     -
     '''
     carry_datasets = import_carry_datasets(operand_digits, operator, shuffled=True)
 
@@ -211,6 +222,8 @@ def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteratio
     target_dev_list = list()
     input_test_list = list()
     target_test_list = list()
+
+    splited_carry_datasets = dict()
 
     for carries in carry_datasets.keys():
         np_input = carry_datasets[carries]['input']
@@ -226,6 +239,18 @@ def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteratio
         input_test_list.append(input_test)
         target_test_list.append(target_test)
 
+        # Initialize a dict for the number of carries
+        splited_carry_datasets[carries] = dict()
+        splited_carry_datasets[carries]['input'] = dict()
+        splited_carry_datasets[carries]['output'] = dict()
+
+        splited_carry_datasets[carries]['input']['train'] = input_train
+        splited_carry_datasets[carries]['output']['train'] = target_train
+        splited_carry_datasets[carries]['input']['dev'] = input_dev
+        splited_carry_datasets[carries]['output']['dev'] = target_dev
+        splited_carry_datasets[carries]['input']['test'] = input_test
+        splited_carry_datasets[carries]['output']['test'] = target_test
+
     input_train = np.concatenate(input_train_list, axis=0)
     target_train = np.concatenate(target_train_list, axis=0)
     input_dev = np.concatenate(input_dev_list, axis=0)
@@ -233,7 +258,9 @@ def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteratio
     input_test = np.concatenate(input_test_list, axis=0)
     target_test = np.concatenate(target_test_list, axis=0)
 
-    return (input_train, input_dev, input_test, target_train, target_dev, target_test)
+    return (input_train, input_dev, input_test,
+            target_train, target_dev, target_test, 
+            splited_carry_datasets)
 
 
 def np_io2str_op(np_input, np_output, operator):
