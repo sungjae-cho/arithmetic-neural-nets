@@ -17,15 +17,16 @@ def main():
     str_activation = sys.argv[5]
     hidden_units =  int(sys.argv[6])
     confidence_prob = float(sys.argv[7])
-    str_device_num = str(int(sys.argv[8]))
+    max_steps = int(sys.argv[8])
+    str_device_num = str(int(sys.argv[9]))
     nn_model_type = 'rnn'
     on_tlu = config.on_tlu()
     mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
-        hidden_units, confidence_prob, str_device_num, nn_model_type, on_tlu)
+        hidden_units, confidence_prob, max_steps, str_device_num, nn_model_type, on_tlu)
 
 
 def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
-    hidden_units, confidence_prob, str_device_num, nn_model_type, on_tlu):
+    hidden_units, confidence_prob, max_steps, str_device_num, nn_model_type, on_tlu):
 
     def train(sess, batch_input, batch_target, float_epoch, all_correct_val):
         _, _, _ = sess.run([loss, op_accuracy, train_op],
@@ -356,7 +357,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         answer_masked_last_logits_series = []
 
         # Sequential computation
-        for t in range(config.max_time()):
+        for t in range(max_steps):
             # t varies from 0 to (max_time - 1)
             # RNN at step t.
             if rnn_type == 'jordan':
@@ -375,7 +376,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             ##### Jordan RNN at step t.
 
             # Compute answer_mask.
-            if t < config.max_time() - 1:
+            if t < max_steps - 1:
                 # All steps except the last step.
                 confidence = utils.tf_confidence(sigmoid_outputs, confidence_prob=confidence_prob)
                 answer_mask = confidence_mask * confidence
