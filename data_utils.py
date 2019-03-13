@@ -985,27 +985,40 @@ def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_rat
         if dev_ratio != 0:
             input_dev = carry_datasets[carries]['input'][train_end_index:dev_end_index,:]
             target_dev = carry_datasets[carries]['output'][train_end_index:dev_end_index,:]
-            input_dev_list.append(input_dev)
-            target_dev_list.append(target_dev)
             splited_carry_datasets[carries]['input']['dev'] = input_dev
             splited_carry_datasets[carries]['output']['dev'] = target_dev
         else:
-            input_dev = None
-            target_dev = None
+            input_dev = input_train
+            target_dev = target_train
+            splited_carry_datasets[carries]['input']['dev'] = input_train
+            splited_carry_datasets[carries]['output']['dev'] = target_train
+
+        input_dev_list.append(input_dev)
+        target_dev_list.append(target_dev)
 
         # Maek a test set.
-        input_test = carry_datasets[carries]['input'][dev_end_index:,:]
-        target_test = carry_datasets[carries]['output'][dev_end_index:,:]
+        if test_ratio != 0:
+            input_test = carry_datasets[carries]['input'][dev_end_index:,:]
+            target_test = carry_datasets[carries]['output'][dev_end_index:,:]
+            input_test_list.append(input_test)
+            target_test_list.append(target_test)
+            splited_carry_datasets[carries]['input']['test'] = input_test
+            splited_carry_datasets[carries]['output']['test'] = target_test
+        else:
+            input_test = input_train
+            target_test = target_train
+            splited_carry_datasets[carries]['input']['test'] = input_train
+            splited_carry_datasets[carries]['output']['test'] = target_train
+
         input_test_list.append(input_test)
         target_test_list.append(target_test)
-        splited_carry_datasets[carries]['input']['test'] = input_test
-        splited_carry_datasets[carries]['output']['test'] = target_test
+
 
     input_train = np.concatenate(input_train_list, axis=0)
-    input_dev = np.concatenate(input_dev_list, axis=0)
-    input_test = np.concatenate(input_test_list, axis=0)
     target_train = np.concatenate(target_train_list, axis=0)
+    input_dev = np.concatenate(input_dev_list, axis=0)
     target_dev = np.concatenate(target_dev_list, axis=0)
+    input_test = np.concatenate(input_test_list, axis=0)
     target_test = np.concatenate(target_test_list, axis=0)
 
     return (input_train, input_dev, input_test,
