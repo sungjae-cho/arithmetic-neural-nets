@@ -241,16 +241,6 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     ) = data_utils.import_op_dataset(operator, operand_bits,
             train_ratio=train_ratio, dev_ratio=dev_ratio, test_ratio=test_ratio)
 
-    # If the training dataset takes all examples, then the dev and test datasets are the same as the training one.
-    if dev_ratio == 0.0 and test_ratio == 0.0:
-        input_dev = input_train
-        target_dev = target_train
-        input_test = input_train
-        target_test = target_train
-    if dev_ratio == 0.0 and test_ratio != 0.0:
-        input_dev = input_test
-        target_dev = target_test
-
     # Contants
     if nn_model_type == 'mlp':
         NN_INPUT_DIM = input_train.shape[1]
