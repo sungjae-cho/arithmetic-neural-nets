@@ -506,6 +506,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     run_info['network_output_dimension'] = target_train.shape[1]
     run_info['hidden_activation'] = str_activation
     run_info['hidden_dimensions'] = h_layer_dims
+    run_info['max_steps'] = max_steps
 
 
     # Dataset info
