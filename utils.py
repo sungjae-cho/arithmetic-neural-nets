@@ -451,12 +451,16 @@ def write_run_info(run_info, float_epoch,
 
     if run_info['nn_model_type'] == 'mlp':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
-         per_digit_accuracy_val, per_digit_wrong_val) = dev_run_outputs
+         dev_per_digit_accuracy_val, dev_per_digit_wrong_val) = dev_run_outputs
     if run_info['nn_model_type'] == 'rnn':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
             dev_mean_correct_answer_step_val,
             dev_min_correct_answer_step_val,
             dev_max_correct_answer_step_val) = dev_run_outputs
+        (test_loss_val, test_accuracy_val, test_op_wrong_val,
+            test_mean_correct_answer_step_val,
+            test_min_correct_answer_step_val,
+            test_max_correct_answer_step_val) = test_run_outputs
 
     if dev_tlu_run_outputs != None and run_info['nn_model_type'] == 'mlp':
         (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = dev_tlu_run_outputs
@@ -465,22 +469,22 @@ def write_run_info(run_info, float_epoch,
     run_id = run_info['run_id']
 
     # loss, accuracy, n_wrong
-    run_info['last_test_loss'] = dev_loss_val
-    run_info['last_test_accuracy'] = dev_accuracy_val
-    run_info['last_test_op_wrong'] = dev_op_wrong_val
+    run_info['dev/last_test_loss'] = dev_loss_val
+    run_info['dev/last_test_accuracy'] = dev_accuracy_val
+    run_info['dev/last_test_op_wrong'] = dev_op_wrong_val
     if run_info['nn_model_type'] == 'rnn':
-        run_info['last_test_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
-        run_info['last_test_min_correct_answer_step'] = dev_min_correct_answer_step_val
-        run_info['last_test_max_correct_answer_step'] = dev_max_correct_answer_step_val
+        run_info['dev/last_test_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
+        run_info['dev/last_test_min_correct_answer_step'] = dev_min_correct_answer_step_val
+        run_info['dev/last_test_max_correct_answer_step'] = dev_max_correct_answer_step_val
 
     if dev_tlu_run_outputs != None:
-        run_info['last_tlu_test_loss'] = dev_loss_tlu_val
-        run_info['last_tlu_test_accuracy'] = dev_accuracy_tlu_val
-        run_info['last_tlu_op_wrong'] = dev_op_wrong_tlu_val
+        run_info['dev/last_tlu_test_loss'] = dev_loss_tlu_val
+        run_info['dev/last_tlu_test_accuracy'] = dev_accuracy_tlu_val
+        run_info['dev/last_tlu_op_wrong'] = dev_op_wrong_tlu_val
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
-            run_info['last_digit-{}_accuracy'.format(i+1)] = per_digit_accuracy_val[-(i+1)]
-            run_info['last_digit-{}_wrong'.format(i+1)] = per_digit_wrong_val[-(i+1)]
+            run_info['dev/last_digit-{}_accuracy'.format(i+1)] = dev_per_digit_accuracy_val[-(i+1)]
+            run_info['dev/last_digit-{}_wrong'.format(i+1)] = dev_per_digit_wrong_val[-(i+1)]
     if dev_carry_run_outputs != None:
         for n_carries in dev_carry_run_outputs.keys():
             carry_accuracy_val = dev_carry_run_outputs[n_carries][1]
@@ -488,11 +492,11 @@ def write_run_info(run_info, float_epoch,
             carry_mean_correct_answer_step_val = dev_carry_run_outputs[n_carries][3]
             carry_min_correct_answer_step_val = dev_carry_run_outputs[n_carries][4]
             carry_max_correct_answer_step_val = dev_carry_run_outputs[n_carries][5]
-            run_info['last_carry-{}_accuracy'.format(n_carries)] = carry_accuracy_val
-            run_info['last_carry-{}_wrong'.format(n_carries)] = carry_op_wrong_val
-            run_info['last_carry-{}_mean_correct_answer_step'.format(n_carries)] = carry_mean_correct_answer_step_val
-            run_info['last_carry-{}_min_correct_answer_step'.format(n_carries)] = carry_min_correct_answer_step_val
-            run_info['last_carry-{}_max_correct_answer_step'.format(n_carries)] = carry_max_correct_answer_step_val
+            run_info['dev/last_carry-{}_accuracy'.format(n_carries)] = carry_accuracy_val
+            run_info['dev/last_carry-{}_wrong'.format(n_carries)] = carry_op_wrong_val
+            run_info['dev/last_carry-{}_mean_correct_answer_step'.format(n_carries)] = carry_mean_correct_answer_step_val
+            run_info['dev/last_carry-{}_min_correct_answer_step'.format(n_carries)] = carry_min_correct_answer_step_val
+            run_info['dev/last_carry-{}_max_correct_answer_step'.format(n_carries)] = carry_max_correct_answer_step_val
 
     # float epochs
     run_info['last_epoch'] = float_epoch
@@ -521,9 +525,9 @@ def write_run_info(run_info, float_epoch,
         for n_carries in dev_carry_run_outputs.keys():
             carry_op_wrong_val = dev_carry_run_outputs[n_carries][2]
             # init_all_correct: the initial time to attain all correct output for `n_carries` dataset.
-            init_all_correct_key = 'init_all_correct_carry-{}_epoch'.format(n_carries)
+            init_all_correct_key = 'dev/init_all_correct_carry-{}_epoch'.format(n_carries)
             # init_complete_all_correct: the last initial time to attain all correct output for `n_carries` dataset.
-            init_complete_all_correct_key = 'init_complete_all_correct_carry-{}_epoch'.format(n_carries)
+            init_complete_all_correct_key = 'dev/init_complete_all_correct_carry-{}_epoch'.format(n_carries)
 
             # Initialization step
             if init_all_correct_key not in run_info:
