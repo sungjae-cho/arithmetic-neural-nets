@@ -590,6 +590,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
                     write_train_summary(sess, train_compute_nodes, batch_input, batch_target, float_epoch, all_correct_val, step)
                     write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
+                    write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
                     #write_h1_summary(sess, h1, run_id, float_epoch)
                     if on_tlu:
                         write_tlu_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
@@ -616,6 +617,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                     # dev set summary writer#############################################################
                     dev_run_outputs = write_dev_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step)
                     (_, dev_accuracy_val, dev_op_wrong_val, _, _, _) = dev_run_outputs
+                    test_run_outputs = write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
 
                     # carry datasets summary writer #####################################################
                     if (operator in config.operators_list()) and config.on_carry_datasets_summary():
