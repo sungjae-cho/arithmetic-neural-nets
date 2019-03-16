@@ -3,6 +3,7 @@ import numpy as np # shuffle_np_arrays, get_2d_input
 import tensorflow as tf # accuracy_vector_targets, get_fnn_model_name
 import os # create_dir
 import config
+from datetime import datetime
 
 
 def shuffle_np_arrays(x, y):
@@ -468,23 +469,71 @@ def write_run_info(run_info, float_epoch,
     experiment_name = run_info['experiment_name']
     run_id = run_info['run_id']
 
+
+    create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
+    pickle_path = '{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id)
+    if os.path.exists(pickle_path):
+        with open(pickle_path, 'rb') as f:
+            old_run_info = pickle.load(f)
+    else:
+        old_run_info = None
+
     # loss, accuracy, n_wrong
-    run_info['dev/last_test_loss'] = dev_loss_val
-    run_info['dev/last_test_accuracy'] = dev_accuracy_val
-    run_info['dev/last_test_op_wrong'] = dev_op_wrong_val
+    run_info['dev/last_loss'] = dev_loss_val
+    run_info['dev/last_accuracy'] = dev_accuracy_val
+    run_info['dev/last_op_wrong'] = dev_op_wrong_val
+    run_info['test/last_loss'] = test_loss_val
+    run_info['test/last_accuracy'] = test_accuracy_val
+    run_info['test/last_op_wrong'] = test_op_wrong_val
+    if old_run_info == None
+        # The phase of first recording run_info
+        run_info['dev/max_accuracy'] = dev_accuracy_val
+        run_info['dev/max_accuracy_epoch'] = float_epoch
+        run_info['test/early_stopping/accuracy'] = test_accuracy_val
+        run_info['start_time'] = datetime.now()
+    else:
+        run_info['start_time'] = old_run_info['start_time']
+        run_info['last_time'] = datetime.now()
+        run_info['running_time'] = run_info['last_time'] - run_info['start_time']
+
+        # Candidate early stopping phase.
+        if run_info['dev/max_accuracy'] < dev_accuracy_val:
+            run_info['dev/max_accuracy'] = dev_accuracy_val
+            run_info['dev/max_accuracy_epoch'] = float_epoch
+            run_info['test/early_stopping/accuracy'] = test_accuracy_val
+
+            if run_info['nn_model_type'] == 'rnn':
+                run_info['dev/early_stopping/mean_correct_answer_step'] = dev_mean_correct_answer_step_val
+                run_info['dev/early_stopping/min_correct_answer_step'] = dev_min_correct_answer_step_val
+                run_info['dev/early_stopping/max_correct_answer_step'] = dev_max_correct_answer_step_val
+                run_info['test/early_stopping/mean_correct_answer_step'] = test_mean_correct_answer_step_val
+                run_info['test/early_stopping/min_correct_answer_step'] = test_min_correct_answer_step_val
+                run_info['test/early_stopping/max_correct_answer_step'] = test_max_correct_answer_step_val
+
+                if dev_carry_run_outputs != None:
+                    for n_carries in dev_carry_run_outputs.keys():
+                        run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
+                        run_info['test/carry-{}/early_stopping/mean_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][3]
+
+
     if run_info['nn_model_type'] == 'rnn':
-        run_info['dev/last_test_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
-        run_info['dev/last_test_min_correct_answer_step'] = dev_min_correct_answer_step_val
-        run_info['dev/last_test_max_correct_answer_step'] = dev_max_correct_answer_step_val
+        run_info['dev/last_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
+        run_info['dev/last_min_correct_answer_step'] = dev_min_correct_answer_step_val
+        run_info['dev/last_max_correct_answer_step'] = dev_max_correct_answer_step_val
+        run_info['test/last_mean_correct_answer_step'] = test_mean_correct_answer_step_val
+        run_info['test/last_min_correct_answer_step'] = test_min_correct_answer_step_val
+        run_info['test/last_max_correct_answer_step'] = test_max_correct_answer_step_val
 
     if dev_tlu_run_outputs != None:
         run_info['dev/last_tlu_test_loss'] = dev_loss_tlu_val
         run_info['dev/last_tlu_test_accuracy'] = dev_accuracy_tlu_val
         run_info['dev/last_tlu_op_wrong'] = dev_op_wrong_tlu_val
+
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             run_info['dev/last_digit-{}_accuracy'.format(i+1)] = dev_per_digit_accuracy_val[-(i+1)]
             run_info['dev/last_digit-{}_wrong'.format(i+1)] = dev_per_digit_wrong_val[-(i+1)]
+
     if dev_carry_run_outputs != None:
         for n_carries in dev_carry_run_outputs.keys():
             carry_accuracy_val = dev_carry_run_outputs[n_carries][1]
