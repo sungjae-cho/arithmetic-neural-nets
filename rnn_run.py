@@ -652,7 +652,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                         ##print("Model saved.")
                         # decrease_dev_summary_period
 
-                    decrease_dev_summary_period(dev_accuracy_val, dev_op_wrong_val)
+                    #decrease_dev_summary_period(dev_accuracy_val, dev_op_wrong_val)
 
                     # If there is no wrong operation, then ...
                     all_correct_val = get_all_correct_val(dev_op_wrong_val)
