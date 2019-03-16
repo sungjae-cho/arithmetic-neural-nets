@@ -544,7 +544,8 @@ def write_run_info(run_info, float_epoch,
 
 
 def write_measures(run_info, float_epoch,
-                   dev_run_outputs, dev_tlu_run_outputs):
+                   dev_run_outputs, dev_tlu_run_outputs,
+                   test_run_outputs, carry_run_outputs=None):
 
     if run_info['nn_model_type'] == 'mlp':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
