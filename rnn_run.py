@@ -638,11 +638,13 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                     if operator in config.operators_list() and config.on_carry_datasets_summary():
                         utils.write_run_info(run_info, float_epoch,
                                             dev_run_outputs, dev_tlu_run_outputs,
-                                            test_run_outputs, carry_run_outputs)
+                                            test_run_outputs,
+                                            dev_carry_run_outputs, test_carry_run_outputs)
 
                         utils.write_measures(run_info, float_epoch,
                                             dev_run_outputs, dev_tlu_run_outputs,
-                                            test_run_outputs, carry_run_outputs)
+                                            test_run_outputs,
+                                            dev_carry_run_outputs, test_carry_run_outputs)
                     else:
                         utils.write_run_info(run_info, float_epoch,
                                             dev_run_outputs, dev_tlu_run_outputs,

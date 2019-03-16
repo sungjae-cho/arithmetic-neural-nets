@@ -446,7 +446,8 @@ def init_run_info(NN_OUTPUT_DIM):
 
 def write_run_info(run_info, float_epoch,
                    dev_run_outputs, dev_tlu_run_outputs,
-                   test_run_outputs, carry_run_outputs=None):
+                   test_run_outputs,
+                   dev_carry_run_outputs=None, test_carry_run_outputs=None):
 
     if run_info['nn_model_type'] == 'mlp':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
@@ -480,13 +481,13 @@ def write_run_info(run_info, float_epoch,
         for i in range(len(per_digit_wrong_val)):
             run_info['last_digit-{}_accuracy'.format(i+1)] = per_digit_accuracy_val[-(i+1)]
             run_info['last_digit-{}_wrong'.format(i+1)] = per_digit_wrong_val[-(i+1)]
-    if carry_run_outputs != None:
-        for n_carries in carry_run_outputs.keys():
-            carry_accuracy_val = carry_run_outputs[n_carries][1]
-            carry_op_wrong_val = carry_run_outputs[n_carries][2]
-            carry_mean_correct_answer_step_val = carry_run_outputs[n_carries][3]
-            carry_min_correct_answer_step_val = carry_run_outputs[n_carries][4]
-            carry_max_correct_answer_step_val = carry_run_outputs[n_carries][5]
+    if dev_carry_run_outputs != None:
+        for n_carries in dev_carry_run_outputs.keys():
+            carry_accuracy_val = dev_carry_run_outputs[n_carries][1]
+            carry_op_wrong_val = dev_carry_run_outputs[n_carries][2]
+            carry_mean_correct_answer_step_val = dev_carry_run_outputs[n_carries][3]
+            carry_min_correct_answer_step_val = dev_carry_run_outputs[n_carries][4]
+            carry_max_correct_answer_step_val = dev_carry_run_outputs[n_carries][5]
             run_info['last_carry-{}_accuracy'.format(n_carries)] = carry_accuracy_val
             run_info['last_carry-{}_wrong'.format(n_carries)] = carry_op_wrong_val
             run_info['last_carry-{}_mean_correct_answer_step'.format(n_carries)] = carry_mean_correct_answer_step_val
@@ -516,9 +517,9 @@ def write_run_info(run_info, float_epoch,
                 run_info[init_complete_all_correct_key] = -1
 
     # The float epoch of all carry datasets
-    if carry_run_outputs != None:
-        for n_carries in carry_run_outputs.keys():
-            carry_op_wrong_val = carry_run_outputs[n_carries][2]
+    if dev_carry_run_outputs != None:
+        for n_carries in dev_carry_run_outputs.keys():
+            carry_op_wrong_val = dev_carry_run_outputs[n_carries][2]
             # init_all_correct: the initial time to attain all correct output for `n_carries` dataset.
             init_all_correct_key = 'init_all_correct_carry-{}_epoch'.format(n_carries)
             # init_complete_all_correct: the last initial time to attain all correct output for `n_carries` dataset.
@@ -545,7 +546,8 @@ def write_run_info(run_info, float_epoch,
 
 def write_measures(run_info, float_epoch,
                    dev_run_outputs, dev_tlu_run_outputs,
-                   test_run_outputs, carry_run_outputs=None):
+                   test_run_outputs,
+                   dev_carry_run_outputs=None, test_carry_run_outputs=None):
 
     if run_info['nn_model_type'] == 'mlp':
         (dev_loss_val, dev_accuracy_val, dev_op_wrong_val,
