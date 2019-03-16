@@ -103,7 +103,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                        big_batch_training:big_batch_training_val,
                        all_correct_epoch:(all_correct_val * float_epoch),
                        all_correct:all_correct_val})
-        print("└ epoch: {}, step: {}, test_loss: {}, test_accuracy: {}, op_wrong: {}".format(epoch, step, test_loss, test_accuracy, op_wrong_val))
+        #print("└ epoch: {}, step: {}, test_loss: {}, test_accuracy: {}, op_wrong: {}".format(epoch, step, test_loss, test_accuracy, op_wrong_val))
         test_summary_writer.add_summary(merged_summary_op_val, step)
 
         return (test_loss, test_accuracy, op_wrong_val,
