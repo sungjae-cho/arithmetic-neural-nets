@@ -557,6 +557,10 @@ def write_measures(run_info, float_epoch,
             dev_mean_correct_answer_step_val,
             dev_min_correct_answer_step_val,
             dev_max_correct_answer_step_val) = dev_run_outputs
+        (test_loss_val, test_accuracy_val, test_op_wrong_val,
+            test_mean_correct_answer_step_val,
+            test_min_correct_answer_step_val,
+            test_max_correct_answer_step_val) = test_run_outputs
 
     if dev_tlu_run_outputs != None:
         (dev_loss_tlu_val, dev_accuracy_tlu_val, dev_op_wrong_tlu_val) = dev_tlu_run_outputs
@@ -571,24 +575,33 @@ def write_measures(run_info, float_epoch,
         # Create a new measure log dictionary
         measure_logs = dict()
         measure_logs['float_epoch'] = list()
-        measure_logs['dev_loss'] = list()
-        measure_logs['dev_accuracy'] = list()
-        measure_logs['dev_op_wrong'] = list()
-        measure_logs['test_loss'] = list()
-        measure_logs['test_accuracy'] = list()
-        measure_logs['test_op_wrong'] = list()
+        measure_logs['dev/loss'] = list()
+        measure_logs['dev/accuracy'] = list()
+        measure_logs['dev/op_wrong'] = list()
+        measure_logs['test/loss'] = list()
+        measure_logs['test/accuracy'] = list()
+        measure_logs['test/op_wrong'] = list()
+        for n_carries in dev_carry_run_outputs.keys():
+            measure_logs['dev/carry-{}/accuracy'.format(n_carries)] = list()
+            measure_logs['test/carry-{}/accuracy'.format(n_carries)] = list()
+
         if run_info['nn_model_type'] == 'rnn':
-            measure_logs['mean_correct_answer_step'] = list()
-            measure_logs['max_correct_answer_step'] = list()
-            measure_logs['min_correct_answer_step'] = list()
-        if dev_tlu_run_outputs != None:
-            measure_logs['tlu_test_loss'] = list()
-            measure_logs['tlu_test_accuracy'] = list()
-            measure_logs['tlu_op_wrong'] = list()
+            measure_logs['dev/mean_correct_answer_step'] = list()
+            measure_logs['test/mean_correct_answer_step'] = list()
+            if dev_carry_run_outputs != None:
+                for n_carries in dev_carry_run_outputs.keys():
+                    measure_logs['dev/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
+                    measure_logs['test/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
+
         if run_info['nn_model_type'] == 'mlp':
             for i in range(len(per_digit_wrong_val)):
                 measure_logs['digit-{}_accuracy'.format(i+1)] = list()
                 measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
+
+        if dev_tlu_run_outputs != None:
+            measure_logs['tlu_test_loss'] = list()
+            measure_logs['tlu_test_accuracy'] = list()
+            measure_logs['tlu_op_wrong'] = list()
 
     else:
         # Import the measure log dictionary from the pickle file.
@@ -597,17 +610,33 @@ def write_measures(run_info, float_epoch,
 
     # Append a new set of measures
     measure_logs['float_epoch'].append(float_epoch)
-    measure_logs['test_loss'].append(dev_loss_val)
-    measure_logs['test_accuracy'].append(dev_accuracy_val)
-    measure_logs['test_op_wrong'].append(dev_op_wrong_val)
-    if dev_tlu_run_outputs != None:
-        measure_logs['tlu_test_loss'].append(dev_loss_tlu_val)
-        measure_logs['tlu_test_accuracy'].append(dev_accuracy_tlu_val)
-        measure_logs['tlu_op_wrong'].append(dev_op_wrong_tlu_val)
+    measure_logs['dev/loss'].append(dev_loss_val)
+    measure_logs['dev/accuracy'].append(dev_accuracy_val)
+    measure_logs['dev/op_wrong'].append(dev_op_wrong_val)
+    measure_logs['test/loss'].append(test_loss_val)
+    measure_logs['test/accuracy'].append(test_accuracy_val)
+    measure_logs['test/op_wrong'].append(test_op_wrong_val)
+    for n_carries in dev_carry_run_outputs.keys():
+        measure_logs['dev/carry-{}/accuracy'.format(n_carries)].append(dev_carry_run_outputs[1])
+        measure_logs['test/carry-{}/accuracy'.format(n_carries)].append(test_carry_run_outputs[1])
+
+    if run_info['nn_model_type'] == 'rnn':
+        measure_logs['dev/mean_correct_answer_step'].append(dev_mean_correct_answer_step_val)
+        measure_logs['test/mean_correct_answer_step'].append(test_mean_correct_answer_step_val)
+        if dev_carry_run_outputs != None:
+            for n_carries in dev_carry_run_outputs.keys():
+                measure_logs['dev/carry-{}/mean_correct_answer_step'.format(n_carries)].append(dev_carry_run_outputs[3])
+                measure_logs['test/carry-{}/mean_correct_answer_step'.format(n_carries)].append(test_carry_run_outputs[3])
+
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             measure_logs['digit-{}_accuracy'.format(i+1)].append(per_digit_accuracy_val[-(i+1)])
             measure_logs['digit-{}_op_wrong'.format(i+1)].append(per_digit_wrong_val[-(i+1)])
+
+    if dev_tlu_run_outputs != None:
+        measure_logs['tlu_test_loss'].append(dev_loss_tlu_val)
+        measure_logs['tlu_test_accuracy'].append(dev_accuracy_tlu_val)
+        measure_logs['tlu_op_wrong'].append(dev_op_wrong_tlu_val)
 
     # Write the appended measure_logs
     with open(pickle_path, 'wb') as f:
