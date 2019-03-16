@@ -621,7 +621,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
                     # carry datasets summary writer #####################################################
                     if (operator in config.operators_list()) and config.on_carry_datasets_summary():
-                        carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'dev')
+                        dev_carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'dev')
+                        test_carry_run_outputs = write_carry_datasets_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step, 'test')
                         write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'train')
 
 
