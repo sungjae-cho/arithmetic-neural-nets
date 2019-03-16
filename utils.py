@@ -567,9 +567,16 @@ def write_measures(run_info, float_epoch,
         # Create a new measure log dictionary
         measure_logs = dict()
         measure_logs['float_epoch'] = list()
+        measure_logs['dev_loss'] = list()
+        measure_logs['dev_accuracy'] = list()
+        measure_logs['dev_op_wrong'] = list()
         measure_logs['test_loss'] = list()
         measure_logs['test_accuracy'] = list()
         measure_logs['test_op_wrong'] = list()
+        if run_info['nn_model_type'] == 'rnn':
+            measure_logs['mean_correct_answer_step'] = list()
+            measure_logs['max_correct_answer_step'] = list()
+            measure_logs['min_correct_answer_step'] = list()
         if dev_tlu_run_outputs != None:
             measure_logs['tlu_test_loss'] = list()
             measure_logs['tlu_test_accuracy'] = list()
