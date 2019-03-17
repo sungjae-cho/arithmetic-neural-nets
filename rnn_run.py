@@ -25,7 +25,7 @@ def main():
     mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         hidden_units, confidence_prob, max_steps, str_device_num, nn_model_type, on_tlu)
 
-
+@profile
 def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     hidden_units, confidence_prob, max_steps, str_device_num, nn_model_type, on_tlu):
 
