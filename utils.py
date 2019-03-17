@@ -631,7 +631,7 @@ def create_measure_logs(run_info):
     return measure_logs
 
 
-def write_measures(run_info, float_epoch,
+def write_measures(measure_logs, run_info, float_epoch,
                    dev_run_outputs, dev_tlu_run_outputs,
                    test_run_outputs,
                    dev_carry_run_outputs=None, test_carry_run_outputs=None):
@@ -725,7 +725,8 @@ def write_measures(run_info, float_epoch,
         measure_logs['tlu_test_accuracy'].append(dev_accuracy_tlu_val)
         measure_logs['tlu_op_wrong'].append(dev_op_wrong_tlu_val)
 
-    # Write the appended measure_logs
+def save_measure_logs(measure_logs):
+    # Write measure_logs
     with open(pickle_path, 'wb') as f:
         pickle.dump(measure_logs, f)
 

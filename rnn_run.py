@@ -9,6 +9,7 @@ import pickle
 import sys
 import config
 import gc # garbage collector interface
+import tracemalloc
 
 def main():
     experiment_name = sys.argv[1]
@@ -25,7 +26,7 @@ def main():
     mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         hidden_units, confidence_prob, max_steps, str_device_num, nn_model_type, on_tlu)
 
-@profile
+
 def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     hidden_units, confidence_prob, max_steps, str_device_num, nn_model_type, on_tlu):
 
@@ -228,6 +229,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
         if op_wrong_val > 512:
             dev_summary_period = init_dev_summary_period
+
 
     ############################################################################
     # Running point.
@@ -520,6 +522,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         run_info['train_set_size/carry-{}'.format(carries)] = splited_carry_datasets[carries]['input']['train'].shape[0]
         run_info['dev_set_size/carry-{}'.format(carries)] = splited_carry_datasets[carries]['input']['dev'].shape[0]
         run_info['test_set_size/carry-{}'.format(carries)] = splited_carry_datasets[carries]['input']['test'].shape[0]
+    run_info['carry_list'] = list(splited_carry_datasets.keys())
 
     # Optimizer info
     run_info['batch_size'] = batch_size
@@ -574,7 +577,18 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         big_batch_training_val = False
         init_all_correct_model_saved = False
 
+        measure_logs = create_measure_logs(run_info)
+        tracemalloc.start()
+        snapshot_now = tracemalloc.take_snapshot()
         for epoch in range(n_epoch):
+            if epoch % 100 == 0:
+                snapshot_before = snapshot_now
+                snapshot_now = tracemalloc.take_snapshot()
+                diff_stats = snapshot_now.compare_to(snapshot_before, 'lineno')
+                for stat in diff_stats[:10]:
+                    print(stat)
+                print('===================================================')
+
             input_train, target_train = utils.shuffle_np_arrays(input_train, target_train)
 
             if big_batch_saturation and all_correct_val:
@@ -636,12 +650,13 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
                     # Write running information################################
                     # Write the logs of measures################################
+
                     utils.write_run_info(run_info, float_epoch,
                                         dev_run_outputs, dev_tlu_run_outputs,
                                         test_run_outputs,
                                         dev_carry_run_outputs, test_carry_run_outputs)
 
-                    utils.write_measures(run_info, float_epoch,
+                    utils.write_measures(measure_logs, run_info, float_epoch,
                                         dev_run_outputs, dev_tlu_run_outputs,
                                         test_run_outputs,
                                         dev_carry_run_outputs, test_carry_run_outputs)
@@ -691,6 +706,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")
+
+    utils.save_measure_logs(measure_logs)
 
     train_summary_writer.close()
     dev_summary_writer.close()
