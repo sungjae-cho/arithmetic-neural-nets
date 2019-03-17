@@ -482,9 +482,9 @@ def write_run_info(run_info, float_epoch,
     run_info['test/last_loss'] = test_loss_val
     run_info['test/last_accuracy'] = test_accuracy_val
     run_info['test/last_op_wrong'] = test_op_wrong_val
-    run_info['start_time'] = old_run_info['start_time'] if old_run_info != None else datetime.now()
-    run_info['last_time'] = datetime.now()
-    run_info['running_time'] = run_info['last_time'] - run_info['start_time']
+    run_info['time/start_time'] = old_run_info['time/start_time'] if old_run_info != None else datetime.now()
+    run_info['time/last_time'] = datetime.now()
+    run_info['time/running_time'] = run_info['time/last_time'] - run_info['time/start_time']
 
     if run_info['nn_model_type'] == 'rnn':
         run_info['dev/last_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
