@@ -35,7 +35,7 @@ def get_run_info_path(run_id, experiment_name):
 
 def get_run_info(run_id, experiment_name):
     run_info_path = get_run_info_path(run_id, experiment_name)
-    with open (run_info_path, 'rb') as f:
+    with open(run_info_path, 'rb') as f:
         run_info = pickle.load(f)
     return run_info
 
