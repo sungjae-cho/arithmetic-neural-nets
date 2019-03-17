@@ -8,6 +8,7 @@ import os
 import pickle
 import sys
 import config
+import gc # garbage collector interface
 
 def main():
     experiment_name = sys.argv[1]
@@ -680,6 +681,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             # End of one epoch
             if all_correct_val and all_correct_stop:
                 break # Break the epoch for-loop
+            gc.collect()
 
         # End of all epochs
 
