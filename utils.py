@@ -179,6 +179,18 @@ def get_op_correct(targets, predictions):
     return op_correct
 
 
+def get_run_info(experiment_name, run_id):
+    create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
+    pickle_path = '{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id)
+    if os.path.exists(pickle_path):
+        with open(pickle_path, 'rb') as f:
+            run_info = pickle.load(f)
+    else:
+        run_info = None
+
+    return run_info
+
+
 def get_correct_first_indices_stat(op_correct_stack):
     '''
     Parameters
@@ -569,17 +581,20 @@ def write_run_info(run_info, float_epoch,
             if carry_op_wrong_val != 0 and run_info[init_complete_all_correct_key] != -1:
                 run_info[init_complete_all_correct_key] = -1
 
-
+    # Recordig for early stopping
     if old_run_info == None:
         run_info['dev/max_accuracy'] = dev_accuracy_val
         run_info['dev/max_accuracy_epoch'] = float_epoch
-        run_info['test/early_stopping/accuracy'] = test_accuracy_val
     else:
         # Candidate early stopping phase.
-        if run_info['dev/max_accuracy'] < dev_accuracy_val:
+        if old_run_info['dev/max_accuracy'] < dev_accuracy_val:
             run_info['dev/max_accuracy'] = dev_accuracy_val
             run_info['dev/max_accuracy_epoch'] = float_epoch
             run_info['test/early_stopping/accuracy'] = test_accuracy_val
+            if dev_carry_run_outputs != None:
+                for n_carries in dev_carry_run_outputs.keys():
+                    run_info['dev/carry-{}/early_stopping/accuracy'.format(n_carries)] = dev_carry_run_outputs[n_carries][1]
+                    run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
 
             if run_info['nn_model_type'] == 'rnn':
                 run_info['dev/early_stopping/mean_correct_answer_step'] = dev_mean_correct_answer_step_val
@@ -591,7 +606,6 @@ def write_run_info(run_info, float_epoch,
 
                 if dev_carry_run_outputs != None:
                     for n_carries in dev_carry_run_outputs.keys():
-                        run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
                         run_info['test/carry-{}/early_stopping/mean_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][3]
                         run_info['test/carry-{}/early_stopping/min_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][4]
                         run_info['test/carry-{}/early_stopping/max_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][5]
