@@ -3,6 +3,7 @@ import pandas as pd
 import operator
 import config
 import utils
+import os.path
 from pprint import pprint
 from os import listdir
 from os.path import isfile, isdir, join
@@ -35,8 +36,12 @@ def get_run_info_path(run_id, experiment_name):
 
 def get_run_info(run_id, experiment_name):
     run_info_path = get_run_info_path(run_id, experiment_name)
-    with open(run_info_path, 'rb') as f:
-        run_info = pickle.load(f)
+    if os.path.exists(run_info_path):
+        with open(run_info_path, 'rb') as f:
+            run_info = pickle.load(f)
+    else:
+        run_info = None
+
     return run_info
 
 def print_run_info(run_id, experiment_name):
