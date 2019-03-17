@@ -485,7 +485,7 @@ def write_run_info(run_info, float_epoch,
     run_info['test/last_loss'] = test_loss_val
     run_info['test/last_accuracy'] = test_accuracy_val
     run_info['test/last_op_wrong'] = test_op_wrong_val
-    if old_run_info == None
+    if old_run_info == None:
         # The phase of first recording run_info
         run_info['start_time'] = datetime.now()
         run_info['dev/max_accuracy'] = dev_accuracy_val
