@@ -578,16 +578,16 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         init_all_correct_model_saved = False
 
         measure_logs = utils.create_measure_logs(run_info)
-        tracemalloc.start()
-        snapshot_now = tracemalloc.take_snapshot()
+        #tracemalloc.start()
+        #snapshot_now = tracemalloc.take_snapshot()
         for epoch in range(n_epoch):
-            if epoch % 100 == 0:
+            '''if epoch % 100 == 0:
                 snapshot_before = snapshot_now
                 snapshot_now = tracemalloc.take_snapshot()
                 diff_stats = snapshot_now.compare_to(snapshot_before, 'lineno')
                 for stat in diff_stats[:10]:
                     print(stat)
-                print('===================================================')
+                print('===================================================')'''
 
             input_train, target_train = utils.shuffle_np_arrays(input_train, target_train)
 
