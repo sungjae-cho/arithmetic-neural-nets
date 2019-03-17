@@ -134,7 +134,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                 carry_mean_answer_step_val,
                 carry_min_answer_step_val,
                 carry_max_answer_step_val)
-            carry_datasets_summary_writers[n_carries][dataset_type].add_summary(merged_summary_op_val, step)
+            if config.on_carry_datasets_summary():
+                carry_datasets_summary_writers[n_carries][dataset_type].add_summary(merged_summary_op_val, step)
 
         return value_dict
 
@@ -621,10 +622,9 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                     test_run_outputs = write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
 
                     # carry datasets summary writer #####################################################
-                    if (operator in config.operators_list()) and config.on_carry_datasets_summary():
-                        dev_carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'dev')
-                        test_carry_run_outputs = write_carry_datasets_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step, 'test')
-                        write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'train')
+                    dev_carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'dev')
+                    test_carry_run_outputs = write_carry_datasets_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step, 'test')
+                    write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'train')
 
 
                     # TLU-dev summary writer#############################################################
@@ -636,23 +636,15 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
                     # Write running information################################
                     # Write the logs of measures################################
-                    if operator in config.operators_list() and config.on_carry_datasets_summary():
-                        utils.write_run_info(run_info, float_epoch,
-                                            dev_run_outputs, dev_tlu_run_outputs,
-                                            test_run_outputs,
-                                            dev_carry_run_outputs, test_carry_run_outputs)
+                    utils.write_run_info(run_info, float_epoch,
+                                        dev_run_outputs, dev_tlu_run_outputs,
+                                        test_run_outputs,
+                                        dev_carry_run_outputs, test_carry_run_outputs)
 
-                        utils.write_measures(run_info, float_epoch,
-                                            dev_run_outputs, dev_tlu_run_outputs,
-                                            test_run_outputs,
-                                            dev_carry_run_outputs, test_carry_run_outputs)
-                    else:
-                        utils.write_run_info(run_info, float_epoch,
-                                            dev_run_outputs, dev_tlu_run_outputs,
-                                            test_run_outputs)
-                        utils.write_measures(run_info, float_epoch,
-                                            dev_run_outputs, dev_tlu_run_outputs,
-                                            test_run_outputs)
+                    utils.write_measures(run_info, float_epoch,
+                                        dev_run_outputs, dev_tlu_run_outputs,
+                                        test_run_outputs,
+                                        dev_carry_run_outputs, test_carry_run_outputs)
 
                     if is_last_batch(i_batch):
                         # After one epoch is trained
@@ -695,8 +687,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             ) = write_test_summary(sess, test_compute_nodes, float_epoch, all_correct_val, step)
 
         # carry datasets summary writer #####################################################
-        if (operator in config.operators_list()) and config.on_carry_datasets_summary():
-            carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'test')
+        #carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'test')
 
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")
