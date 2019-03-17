@@ -3,6 +3,7 @@ import numpy as np # shuffle_np_arrays, get_2d_input
 import tensorflow as tf # accuracy_vector_targets, get_fnn_model_name
 import os # create_dir
 import config
+import run_info_utils
 from datetime import datetime
 
 
@@ -177,18 +178,6 @@ def get_op_correct(targets, predictions):
     op_correct = tf.equal(digits_correct, n_dimensions)
 
     return op_correct
-
-
-def get_run_info(experiment_name, run_id):
-    create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
-    pickle_path = '{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id)
-    if os.path.exists(pickle_path):
-        with open(pickle_path, 'rb') as f:
-            run_info = pickle.load(f)
-    else:
-        run_info = None
-
-    return run_info
 
 
 def get_correct_first_indices_stat(op_correct_stack):
@@ -481,14 +470,8 @@ def write_run_info(run_info, float_epoch,
     experiment_name = run_info['experiment_name']
     run_id = run_info['run_id']
 
-
-    create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
-    pickle_path = '{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id)
-    if os.path.exists(pickle_path):
-        with open(pickle_path, 'rb') as f:
-            old_run_info = pickle.load(f)
-    else:
-        old_run_info = None
+    # If there is no run_info file, it returns None.
+    old_run_info = run_info_utils.get_run_info(run_id, experiment_name)
 
     # loss, accuracy, n_wrong
     run_info['dev/last_loss'] = dev_loss_val
