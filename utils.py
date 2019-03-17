@@ -472,6 +472,8 @@ def write_run_info(run_info, float_epoch,
 
     # If there is no run_info file, it returns None.
     old_run_info = run_info_utils.get_run_info(run_id, experiment_name)
+    if old_run_info != None:
+        run_info = old_run_info
 
     # loss, accuracy, n_wrong
     run_info['dev/last_loss'] = dev_loss_val
