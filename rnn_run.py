@@ -577,7 +577,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         big_batch_training_val = False
         init_all_correct_model_saved = False
 
-        measure_logs = create_measure_logs(run_info)
+        measure_logs = utils.create_measure_logs(run_info)
         tracemalloc.start()
         snapshot_now = tracemalloc.take_snapshot()
         for epoch in range(n_epoch):

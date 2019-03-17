@@ -613,20 +613,18 @@ def create_measure_logs(run_info):
     if run_info['nn_model_type'] == 'rnn':
         measure_logs['dev/mean_correct_answer_step'] = list()
         measure_logs['test/mean_correct_answer_step'] = list()
-        if dev_carry_run_outputs != None:
-            for n_carries in run_info['carry_list']:
-                measure_logs['dev/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
-                measure_logs['test/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
+        for n_carries in run_info['carry_list']:
+            measure_logs['dev/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
+            measure_logs['test/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
 
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             measure_logs['digit-{}_accuracy'.format(i+1)] = list()
             measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
 
-    if dev_tlu_run_outputs != None:
-        measure_logs['tlu_test_loss'] = list()
-        measure_logs['tlu_test_accuracy'] = list()
-        measure_logs['tlu_op_wrong'] = list()
+    measure_logs['tlu_test_loss'] = list()
+    measure_logs['tlu_test_accuracy'] = list()
+    measure_logs['tlu_op_wrong'] = list()
 
     return measure_logs
 
