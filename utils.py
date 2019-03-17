@@ -488,34 +488,11 @@ def write_run_info(run_info, float_epoch,
     if old_run_info == None:
         # The phase of first recording run_info
         run_info['start_time'] = datetime.now()
-        run_info['dev/max_accuracy'] = dev_accuracy_val
-        run_info['dev/max_accuracy_epoch'] = float_epoch
-        run_info['test/early_stopping/accuracy'] = test_accuracy_val
     else:
         run_info['start_time'] = old_run_info['start_time']
         run_info['last_time'] = datetime.now()
         run_info['running_time'] = run_info['last_time'] - run_info['start_time']
 
-        # Candidate early stopping phase.
-        if run_info['dev/max_accuracy'] < dev_accuracy_val:
-            run_info['dev/max_accuracy'] = dev_accuracy_val
-            run_info['dev/max_accuracy_epoch'] = float_epoch
-            run_info['test/early_stopping/accuracy'] = test_accuracy_val
-
-            if run_info['nn_model_type'] == 'rnn':
-                run_info['dev/early_stopping/mean_correct_answer_step'] = dev_mean_correct_answer_step_val
-                run_info['dev/early_stopping/min_correct_answer_step'] = dev_min_correct_answer_step_val
-                run_info['dev/early_stopping/max_correct_answer_step'] = dev_max_correct_answer_step_val
-                run_info['test/early_stopping/mean_correct_answer_step'] = test_mean_correct_answer_step_val
-                run_info['test/early_stopping/min_correct_answer_step'] = test_min_correct_answer_step_val
-                run_info['test/early_stopping/max_correct_answer_step'] = test_max_correct_answer_step_val
-
-                if dev_carry_run_outputs != None:
-                    for n_carries in dev_carry_run_outputs.keys():
-                        run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
-                        run_info['test/carry-{}/early_stopping/mean_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][3]
-                        run_info['test/carry-{}/early_stopping/min_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][4]
-                        run_info['test/carry-{}/early_stopping/max_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][5]
 
     if run_info['nn_model_type'] == 'rnn':
         run_info['dev/last_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
@@ -591,6 +568,34 @@ def write_run_info(run_info, float_epoch,
                 run_info[init_complete_all_correct_key] = float_epoch
             if carry_op_wrong_val != 0 and run_info[init_complete_all_correct_key] != -1:
                 run_info[init_complete_all_correct_key] = -1
+
+
+    if old_run_info == None:
+        run_info['dev/max_accuracy'] = dev_accuracy_val
+        run_info['dev/max_accuracy_epoch'] = float_epoch
+        run_info['test/early_stopping/accuracy'] = test_accuracy_val
+    else:
+        # Candidate early stopping phase.
+        if run_info['dev/max_accuracy'] < dev_accuracy_val:
+            run_info['dev/max_accuracy'] = dev_accuracy_val
+            run_info['dev/max_accuracy_epoch'] = float_epoch
+            run_info['test/early_stopping/accuracy'] = test_accuracy_val
+
+            if run_info['nn_model_type'] == 'rnn':
+                run_info['dev/early_stopping/mean_correct_answer_step'] = dev_mean_correct_answer_step_val
+                run_info['dev/early_stopping/min_correct_answer_step'] = dev_min_correct_answer_step_val
+                run_info['dev/early_stopping/max_correct_answer_step'] = dev_max_correct_answer_step_val
+                run_info['test/early_stopping/mean_correct_answer_step'] = test_mean_correct_answer_step_val
+                run_info['test/early_stopping/min_correct_answer_step'] = test_min_correct_answer_step_val
+                run_info['test/early_stopping/max_correct_answer_step'] = test_max_correct_answer_step_val
+
+                if dev_carry_run_outputs != None:
+                    for n_carries in dev_carry_run_outputs.keys():
+                        run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
+                        run_info['test/carry-{}/early_stopping/mean_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][3]
+                        run_info['test/carry-{}/early_stopping/min_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][4]
+                        run_info['test/carry-{}/early_stopping/max_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][5]
+
 
     # Save run_info
     create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
