@@ -487,10 +487,10 @@ def write_run_info(run_info, float_epoch,
     run_info['test/last_op_wrong'] = test_op_wrong_val
     if old_run_info == None
         # The phase of first recording run_info
+        run_info['start_time'] = datetime.now()
         run_info['dev/max_accuracy'] = dev_accuracy_val
         run_info['dev/max_accuracy_epoch'] = float_epoch
         run_info['test/early_stopping/accuracy'] = test_accuracy_val
-        run_info['start_time'] = datetime.now()
     else:
         run_info['start_time'] = old_run_info['start_time']
         run_info['last_time'] = datetime.now()
@@ -514,7 +514,6 @@ def write_run_info(run_info, float_epoch,
                     for n_carries in dev_carry_run_outputs.keys():
                         run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
                         run_info['test/carry-{}/early_stopping/mean_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][3]
-
 
     if run_info['nn_model_type'] == 'rnn':
         run_info['dev/last_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
