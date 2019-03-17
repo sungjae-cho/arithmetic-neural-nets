@@ -596,6 +596,40 @@ def write_run_info(run_info, float_epoch,
     with open('{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id), 'wb') as f:
         pickle.dump(run_info, f)
 
+def create_measure_logs(run_info):
+    # Create a new measure log dictionary
+    measure_logs = dict()
+    measure_logs['float_epoch'] = list()
+    measure_logs['dev/loss'] = list()
+    measure_logs['dev/accuracy'] = list()
+    measure_logs['dev/op_wrong'] = list()
+    measure_logs['test/loss'] = list()
+    measure_logs['test/accuracy'] = list()
+    measure_logs['test/op_wrong'] = list()
+    for n_carries in run_info['carry_list']:
+        measure_logs['dev/carry-{}/accuracy'.format(n_carries)] = list()
+        measure_logs['test/carry-{}/accuracy'.format(n_carries)] = list()
+
+    if run_info['nn_model_type'] == 'rnn':
+        measure_logs['dev/mean_correct_answer_step'] = list()
+        measure_logs['test/mean_correct_answer_step'] = list()
+        if dev_carry_run_outputs != None:
+            for n_carries in run_info['carry_list']:
+                measure_logs['dev/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
+                measure_logs['test/carry-{}/mean_correct_answer_step'.format(n_carries)] = list()
+
+    if run_info['nn_model_type'] == 'mlp':
+        for i in range(len(per_digit_wrong_val)):
+            measure_logs['digit-{}_accuracy'.format(i+1)] = list()
+            measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
+
+    if dev_tlu_run_outputs != None:
+        measure_logs['tlu_test_loss'] = list()
+        measure_logs['tlu_test_accuracy'] = list()
+        measure_logs['tlu_op_wrong'] = list()
+
+    return measure_logs
+
 
 def write_measures(run_info, float_epoch,
                    dev_run_outputs, dev_tlu_run_outputs,
