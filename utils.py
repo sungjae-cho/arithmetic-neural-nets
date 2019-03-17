@@ -514,6 +514,8 @@ def write_run_info(run_info, float_epoch,
                     for n_carries in dev_carry_run_outputs.keys():
                         run_info['test/carry-{}/early_stopping/accuracy'.format(n_carries)] = test_carry_run_outputs[n_carries][1]
                         run_info['test/carry-{}/early_stopping/mean_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][3]
+                        run_info['test/carry-{}/early_stopping/min_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][4]
+                        run_info['test/carry-{}/early_stopping/max_correct_answer_step'.format(n_carries)] = test_carry_run_outputs[n_carries][5]
 
     if run_info['nn_model_type'] == 'rnn':
         run_info['dev/last_mean_correct_answer_step'] = dev_mean_correct_answer_step_val
