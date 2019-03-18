@@ -619,12 +619,12 @@ def create_measure_logs(run_info):
 
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
-            measure_logs['digit-{}_accuracy'.format(i+1)] = list()
-            measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
+            measure_logs['dev/last_digit-{}_accuracy'.format(i+1)] = list()
+            measure_logs['dev/digit-{}_op_wrong'.format(i+1)] = list()
 
-    measure_logs['tlu_test_loss'] = list()
-    measure_logs['tlu_test_accuracy'] = list()
-    measure_logs['tlu_op_wrong'] = list()
+    measure_logs['dev/tlu_test_loss'] = list()
+    measure_logs['dev/tlu_test_accuracy'] = list()
+    measure_logs['dev/tlu_op_wrong'] = list()
 
     return measure_logs
 
@@ -680,13 +680,13 @@ def write_measures(measure_logs, run_info, float_epoch,
 
         if run_info['nn_model_type'] == 'mlp':
             for i in range(len(per_digit_wrong_val)):
-                measure_logs['digit-{}_accuracy'.format(i+1)] = list()
-                measure_logs['digit-{}_op_wrong'.format(i+1)] = list()
+                measure_logs['dev/last_digit-{}_accuracy'.format(i+1)] = list()
+                measure_logs['dev/digit-{}_op_wrong'.format(i+1)] = list()
 
         if dev_tlu_run_outputs != None:
-            measure_logs['tlu_test_loss'] = list()
-            measure_logs['tlu_test_accuracy'] = list()
-            measure_logs['tlu_op_wrong'] = list()
+            measure_logs['dev/tlu_test_loss'] = list()
+            measure_logs['dev/tlu_test_accuracy'] = list()
+            measure_logs['dev/tlu_op_wrong'] = list()
 
     else:
         # Import the measure log dictionary from the pickle file.
@@ -715,13 +715,13 @@ def write_measures(measure_logs, run_info, float_epoch,
 
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
-            measure_logs['digit-{}_accuracy'.format(i+1)].append(per_digit_accuracy_val[-(i+1)])
-            measure_logs['digit-{}_op_wrong'.format(i+1)].append(per_digit_wrong_val[-(i+1)])
+            measure_logs['dev/last_digit-{}_accuracy'.format(i+1)].append(per_digit_accuracy_val[-(i+1)])
+            measure_logs['dev/digit-{}_op_wrong'.format(i+1)].append(per_digit_wrong_val[-(i+1)])
 
     if dev_tlu_run_outputs != None:
-        measure_logs['tlu_test_loss'].append(dev_loss_tlu_val)
-        measure_logs['tlu_test_accuracy'].append(dev_accuracy_tlu_val)
-        measure_logs['tlu_op_wrong'].append(dev_op_wrong_tlu_val)
+        measure_logs['dev/tlu_test_loss'].append(dev_loss_tlu_val)
+        measure_logs['dev/tlu_test_accuracy'].append(dev_accuracy_tlu_val)
+        measure_logs['dev/tlu_op_wrong'].append(dev_op_wrong_tlu_val)
 
 def save_measure_logs(measure_logs):
     # Write measure_logs
