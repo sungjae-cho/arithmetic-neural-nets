@@ -209,6 +209,13 @@ def get_correct_first_indices_stat(op_correct_stack):
     return (mean_correct_indices, min_correct_indices, max_correct_indices)
 
 
+def get_measure_logs_path(run_id, experiment_name):
+    create_dir('{}/{}'.format(config.dir_measure_log(), experiment_name))
+    pickle_path = '{}/{}/run-{}.pickle'.format(config.dir_measure_log(), experiment_name, run_id)
+
+    return pickle_path
+
+
 def find_index(tensor, value=1):
     '''
     This function returns the lowest indices of elements that have `value` along
@@ -653,8 +660,7 @@ def write_measures(measure_logs, run_info, float_epoch,
     run_id = run_info['run_id']
     experiment_name = run_info['experiment_name']
 
-    create_dir('{}/{}'.format(config.dir_measure_log(), experiment_name))
-    pickle_path = '{}/{}/run-{}.pickle'.format(config.dir_measure_log(), experiment_name, run_id)
+    pickle_path = get_measure_logs_path(run_id, experiment_name)
 
     if not os.path.exists(pickle_path):
         # Create a new measure log dictionary
@@ -723,7 +729,8 @@ def write_measures(measure_logs, run_info, float_epoch,
         measure_logs['dev/tlu_test_accuracy'].append(dev_accuracy_tlu_val)
         measure_logs['dev/tlu_op_wrong'].append(dev_op_wrong_tlu_val)
 
-def save_measure_logs(measure_logs):
+def save_measure_logs(measure_logs, run_id, experiment_name):
+    pickle_path = get_measure_logs_path(run_id, experiment_name)
     # Write measure_logs
     with open(pickle_path, 'wb') as f:
         pickle.dump(measure_logs, f)
