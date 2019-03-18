@@ -426,22 +426,22 @@ def init_run_info(NN_OUTPUT_DIM):
     run_info = dict()
 
     # Training info
-    run_info['last_test_loss'] = -1
-    run_info['last_test_accuracy'] = -1
-    run_info['last_test_op_wrong'] = -1
-    run_info['last_tlu_test_loss'] = -1
-    run_info['last_tlu_test_accuracy'] = -1
-    run_info['last_tlu_op_wrong'] = -1
+    run_info['dev/last_loss'] = -1
+    run_info['dev/last_accuracy'] = -1
+    run_info['dev/last_op_wrong'] = -1
+    run_info['dev/last_tlu_loss'] = -1
+    run_info['dev/last_tlu_accuracy'] = -1
+    run_info['dev/last_tlu_op_wrong'] = -1
     for i in range(NN_OUTPUT_DIM):
-        run_info['last_digit-{}_accuracy'.format(i+1)] = -1
-        run_info['last_digit-{}_wrong'.format(i+1)] = -1
+        run_info['dev/last_digit-{}_accuracy'.format(i+1)] = -1
+        run_info['dev/last_digit-{}_wrong'.format(i+1)] = -1
 
     ## float epochs
     run_info['last_epoch'] = -1
-    run_info['init_all_correct_epoch'] = -1
+    run_info['dev/init_all_correct_epoch'] = -1
     for i in range(NN_OUTPUT_DIM):
-        run_info['init_all_correct_digit-{}_epoch'.format(i+1)] = -1
-        run_info['init_complete_all_correct_digit-{}_epoch'.format(i+1)] = -1
+        run_info['dev/init_all_correct_digit-{}_epoch'.format(i+1)] = -1
+        run_info['dev/init_complete_all_correct_digit-{}_epoch'.format(i+1)] = -1
 
     return run_info
 
@@ -495,8 +495,8 @@ def write_run_info(run_info, float_epoch,
         run_info['test/last_max_correct_answer_step'] = test_max_correct_answer_step_val
 
     if dev_tlu_run_outputs != None:
-        run_info['dev/last_tlu_test_loss'] = dev_loss_tlu_val
-        run_info['dev/last_tlu_test_accuracy'] = dev_accuracy_tlu_val
+        run_info['dev/last_tlu_loss'] = dev_loss_tlu_val
+        run_info['dev/last_tlu_accuracy'] = dev_accuracy_tlu_val
         run_info['dev/last_tlu_op_wrong'] = dev_op_wrong_tlu_val
 
     if run_info['nn_model_type'] == 'mlp':
@@ -521,16 +521,16 @@ def write_run_info(run_info, float_epoch,
     run_info['last_epoch'] = float_epoch
 
     # The float epoch of all correct operation float epoch
-    if dev_op_wrong_val == 0 and run_info['init_all_correct_epoch'] == -1:
-        run_info['init_all_correct_epoch'] = float_epoch
+    if dev_op_wrong_val == 0 and run_info['dev/init_all_correct_epoch'] == -1:
+        run_info['dev/init_all_correct_epoch'] = float_epoch
 
     # The float epoch of all correct digit
     if run_info['nn_model_type'] == 'mlp':
         for i in range(len(per_digit_wrong_val)):
             # init_all_correct: the initial time to attain all correct digit outputs.
-            init_all_correct_key = 'init_all_correct_digit-{}_epoch'.format(i+1)
+            init_all_correct_key = 'dev/init_all_correct_digit-{}_epoch'.format(i+1)
             # init_complete_all_correct: the last initial time to attain all correct digit outputs.
-            init_complete_all_correct_key = 'init_complete_all_correct_digit-{}_epoch'.format(i+1)
+            init_complete_all_correct_key = 'dev/init_complete_all_correct_digit-{}_epoch'.format(i+1)
 
             if per_digit_wrong_val[-(i+1)] == 0 and run_info[init_all_correct_key] == -1:
                 run_info[init_all_correct_key] = float_epoch
