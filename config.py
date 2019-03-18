@@ -78,13 +78,13 @@ def on_tlu():
     return False
 
 def on_carry_datasets_summary():
-    return True
+    return False
 
-def max_time():
-    return 30
+#def max_time():
+#    return 30
 
-def rnn_type():
-    return 'elman'
+#def rnn_type():
+#    return 'elman'
     #return 'jordan'
 
 '''operators_list = ['add', 'subtract', 'multiply', 'divide', 'modulo']
