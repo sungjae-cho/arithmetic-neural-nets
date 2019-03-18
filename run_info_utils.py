@@ -69,6 +69,10 @@ def read_run_info_file(run_info_path):
         run_info = pickle.load(f)
     return run_info
 
+def write_run_info_file(run_info, run_info_path):
+    with open (run_info_path, 'wb') as f:
+        pickle.dump(run_info, f)
+
 def run_info_to_files():
     df_run_info = get_df_run_info()
 
