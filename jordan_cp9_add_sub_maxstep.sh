@@ -27,79 +27,8 @@ experiment()
   rnn_type='jordan'
   confidence_prob=0.9
 
-  #####################################################################################
-  activation='relu'
-
-  max_steps=40
-
-  operator='add'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
-
-  max_steps=50
-
-  operator='add'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
-
-  max_steps=60
-
-  operator='add'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
   ################################################################################
-  activation='tanh'
-
-
-  max_steps=20
-
-  operator='add'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
+  activation='relu'
 
   max_steps=30
 
@@ -110,15 +39,7 @@ experiment()
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
     done
 
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
-
-  max_steps=40
+  max_steps=20
 
   operator='add'
   for i in {1..10..1}
@@ -127,45 +48,13 @@ experiment()
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
     done
 
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
-
-  max_steps=50
+  max_steps=10
 
   operator='add'
   for i in {1..10..1}
     do
       start_echo $operator $rnn_type $confidence_prob
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
-    done
-
-
-  max_steps=60
-
-  operator='add'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  operator='subtract'
-  for i in {1..10..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps  $device_num
     done
 
 }
