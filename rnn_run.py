@@ -135,7 +135,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                 carry_mean_answer_step_val,
                 carry_min_answer_step_val,
                 carry_max_answer_step_val)
-            if config.on_carry_datasets_summary():
+            if config.on_carry_datasets_summary(dataset_type):
                 carry_datasets_summary_writers[n_carries][dataset_type].add_summary(merged_summary_op_val, step)
 
         return value_dict
