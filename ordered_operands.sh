@@ -23,7 +23,7 @@ rnn_type='jordan'
 activation='relu'
 hidden_units=64
 confidence_prob=0.9
-max_steps=30
+#
 
 start_echo()
 {
@@ -45,12 +45,40 @@ experiment()
   device_num=$1
 
   ################################################################################
-  for i in {1..8..1}
+  max_steps=10
+  for i in {1..9..1}
     do
       start_echo $operator $rnn_type $confidence_prob
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
     done
 
+  max_steps=20
+  for i in {1..9..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  max_steps=40
+  for i in {1..9..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  max_steps=50
+  for i in {1..9..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  max_steps=60
+  for i in {1..9..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
 }
 
 experiment 1 &
