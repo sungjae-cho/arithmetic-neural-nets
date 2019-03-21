@@ -768,6 +768,9 @@ def generate_datasets(operand_digits, operator, result_mode='fit', ordered_opera
     # Shuffle the pairs of input and output of op_dataset.
     op_dataset['input'], op_dataset['output'] = shuffle_io_pairs(op_dataset['input'], op_dataset['output'])
 
+    for n_carries in carry_datasets.keys():
+        carry_datasets[n_carries]['input'], carry_datasets[n_carries]['output'] = shuffle_io_pairs(carry_datasets[n_carries]['input'], carry_datasets[n_carries]['output'])
+
     return op_dataset, carry_datasets
 
 
