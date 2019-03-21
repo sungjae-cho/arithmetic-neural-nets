@@ -214,7 +214,7 @@ def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteratio
         }
      -
     '''
-    carry_datasets = import_carry_datasets(operand_digits, operator, shuffled=True)
+    carry_datasets = import_carry_datasets(operand_digits, operator)
 
     input_train_list = list()
     target_train_list = list()
@@ -807,11 +807,11 @@ def save_carry_datasets(carry_datasets, operand_digits, operator):
     print("Saved in '{}'.".format(save_path))
 
     # Ordered carry datasets
-    shuffle_carry_datasets(carry_datasets)
+    '''shuffle_carry_datasets(carry_datasets)
     save_path = '{}/shuffled_carry_datasets.pickle'.format(save_dir)
     with open(save_path, 'wb') as f:
         pickle.dump(carry_datasets, f)
-    print("Saved in '{}'.".format(save_path))
+    print("Saved in '{}'.".format(save_path))'''
 
 
 def save_random_datasets(random_datasets, operand_digits):
@@ -1047,13 +1047,12 @@ def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_rat
             splited_carry_datasets)
 
 
-def import_carry_datasets(operand_digits, operator, shuffled=False):
+def import_carry_datasets(operand_digits, operator):
     '''
     Parameters
     ----------
     operand_digits: int. The number of digits of an operand.
     operantor: str. one of ['add', 'substract', 'multiply', 'divide', 'modulo']
-    shuffle: whether the datasets are randomly shuffled.
 
     Returns
     -------
@@ -1061,10 +1060,12 @@ def import_carry_datasets(operand_digits, operator, shuffled=False):
     - carry_datasets[n_carries]['input']: shape == (n_operations, input_dim).
     - carry_datasets[n_carries]['output']: shape == (n_operations, output_dim).
     '''
-    if shuffled:
-        import_path = 'data/{}-bit/{}/shuffled_carry_datasets.pickle'.format(operand_digits, operator)
-    else:
-        import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
+#    if shuffled:
+#        import_path = 'data/{}-bit/{}/shuffled_carry_datasets.pickle'.format(operand_digits, operator)
+#    else:
+#        import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
+
+    import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
 
     with open(import_path, 'rb') as f:
         carry_datasets = pickle.load(f)
