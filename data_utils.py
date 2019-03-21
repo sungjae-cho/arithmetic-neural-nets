@@ -13,8 +13,8 @@ def create_dir(directory):
         os.makedirs(directory)
 
 
-def get_result_digits(operand_digits, operator, mode='same'):
-    if mode == 'fit':
+def get_result_digits(operand_digits, operator, result_mode='fit'):
+    if result_mode == 'fit':
         if operator == 'add':
             result_digits = operand_digits + 1
         if operator == 'subtract':
@@ -26,7 +26,7 @@ def get_result_digits(operand_digits, operator, mode='same'):
         if operator == 'modulo':
             result_digits = operand_digits
 
-    if mode == 'same':
+    if result_mode == 'same':
         result_digits = operand_digits * 2 # The maximum result digits
     return result_digits
 
@@ -369,7 +369,7 @@ def add_two_digits(digit1, digit2, carry):
     return (carry, result)
 
 
-def add_two_numbers(operand1, operand2, mode='same'):
+def add_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -382,7 +382,7 @@ def add_two_numbers(operand1, operand2, mode='same'):
     n_carries : int. The number of carries occurred while addition.
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'add', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'add', result_mode='fit')
     result = np.zeros((result_digits), dtype=config.np_type())
     carry = 0
     n_carries = 0
@@ -394,15 +394,15 @@ def add_two_numbers(operand1, operand2, mode='same'):
             result[-(i+1)] = carry
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'add', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'add', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def subtract_two_numbers(operand1, operand2, mode='same'):
+def subtract_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -417,7 +417,7 @@ def subtract_two_numbers(operand1, operand2, mode='same'):
     n_carries : int. The number of carries that occurred while subtraction.
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'subtract', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'subtract', result_mode='fit')
     cp_operand1 = np.copy(operand1)
     cp_operand2 = np.copy(operand2)
     result = np.zeros((result_digits), dtype=config.np_type())
@@ -436,15 +436,15 @@ def subtract_two_numbers(operand1, operand2, mode='same'):
             result[-i] = 1
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'subtract', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'subtract', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def multiply_two_numbers(operand1, operand2, mode='same'):
+def multiply_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -457,7 +457,7 @@ def multiply_two_numbers(operand1, operand2, mode='same'):
     n_carries : int. The number of carries that occurred while multiplication.
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'multiply', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'multiply', result_mode='fit')
     result = np.zeros((result_digits), dtype=config.np_type()) # To return
     carry_buffer = np.zeros((result_digits), dtype=config.np_type()) # To save carries while addition
 
@@ -480,15 +480,15 @@ def multiply_two_numbers(operand1, operand2, mode='same'):
         result[-i] = remainder
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'multiply', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'multiply', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def divide_two_numbers(operand1, operand2, mode='same'):
+def divide_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -503,7 +503,7 @@ def divide_two_numbers(operand1, operand2, mode='same'):
     remainder : np.ndarray. shape==(operand_digits).
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'divide', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'divide', result_mode='fit')
     result = np.zeros((result_digits), dtype=config.np_type())
 
     leading_zeros = get_leading_zeros(operand2)
@@ -537,22 +537,22 @@ def divide_two_numbers(operand1, operand2, mode='same'):
             n_carries = 0
         else:
             result[division_index] = 1 # Division result
-            local_subtract_result, n_carries = subtract_two_numbers(local_divide_operand1, local_divide_operand2, mode='fit') # Get the remainder
+            local_subtract_result, n_carries = subtract_two_numbers(local_divide_operand1, local_divide_operand2, result_mode='fit') # Get the remainder
 
         n_total_carries = n_total_carries + n_carries
 
     remainder = local_subtract_result
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'divide', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'divide', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries, remainder)
 
 
-def modulo_two_numbers(operand1, operand2, mode='same'):
+def modulo_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -567,20 +567,20 @@ def modulo_two_numbers(operand1, operand2, mode='same'):
     remainder : np.ndarray. shape==(operand_digits).
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'modulo', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'modulo', result_mode='fit')
 
     _, n_carries, result = divide_two_numbers(operand1, operand2)
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'modulo', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'modulo', result_mode='same')
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def operate_two_numbers(operand1, operand2, operator):
+def operate_two_numbers(operand1, operand2, operator, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -594,15 +594,15 @@ def operate_two_numbers(operand1, operand2, operator):
     - For division, the size of it will be 3 but the size of the others will be 2.
     '''
     if operator == 'add':
-        return_vector = add_two_numbers(operand1, operand2)
+        return_vector = add_two_numbers(operand1, operand2, result_mode)
     if operator == 'subtract':
-        return_vector = subtract_two_numbers(operand1, operand2)
+        return_vector = subtract_two_numbers(operand1, operand2, result_mode)
     if operator == 'multiply':
-        return_vector = multiply_two_numbers(operand1, operand2)
+        return_vector = multiply_two_numbers(operand1, operand2, result_mode)
     if operator == 'divide':
-        return_vector = divide_two_numbers(operand1, operand2)
+        return_vector = divide_two_numbers(operand1, operand2, result_mode)
     if operator == 'modulo':
-        return_vector = modulo_two_numbers(operand1, operand2)
+        return_vector = modulo_two_numbers(operand1, operand2, result_mode)
 
     return return_vector
 
@@ -630,7 +630,7 @@ def generate_random_datasets(operand_digits):
     fixed_random_output_dataset = {'input':list(), 'output':list()}
     random_output_dataset = {'input':list(), 'output':list()}
 
-    result_digits = get_result_digits(operand_digits, 'add', mode='same')
+    result_digits = get_result_digits(operand_digits, 'add', result_mode='same')
 
     # Get a fixed numpy.ndarray binary random integer.
     np_bin_fixed_rand_output = get_np_bin(get_str_bin(np.random.randint(2**result_digits)), result_digits).reshape(1,-1)
@@ -676,12 +676,15 @@ def generate_random_datasets(operand_digits):
     return zero_output_dataset, one_output_dataset, fixed_random_output_dataset, random_output_dataset
 
 
-def generate_datasets(operand_digits, operator):
+def generate_datasets(operand_digits, operator, result_mode='fit'):
     '''
     Parameters
     ----------
     operand_digits: int. the number of the digits of an operand.
-    operator: str. ['add', 'subtract', 'multiply', 'divide', 'modulo'].
+    operator: str. one of ['add', 'subtract', 'multiply', 'divide', 'modulo'].
+    result_mode : str. one of ['fit', 'same'].
+    - 'fit' : result_digits == the minumum number of varying result digits.
+    - 'same' : result_digits of the five opertors has the same number of digits.
 
     Returns
     -------
@@ -706,21 +709,21 @@ def generate_datasets(operand_digits, operator):
 
             # Arithemetic operation phase
             if operator == 'add':
-                result, n_carries = add_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries = add_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'subtract':
                 if dec_op1 < dec_op2:
                     continue
-                result, n_carries = subtract_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries = subtract_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'multiply':
-                result, n_carries = multiply_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries = multiply_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'divide':
                 if dec_op2 == 0:
                     continue
-                result, n_carries, _ = divide_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries, _ = divide_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'modulo':
                 if dec_op2 == 0:
                     continue
-                result, n_carries = modulo_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries = modulo_two_numbers(np_bin_op1, np_bin_op2, result_mode)
 
 
             # Create a list to store operations
@@ -753,10 +756,10 @@ def generate_datasets(operand_digits, operator):
     return op_dataset, carry_datasets
 
 
-def generate_and_save_all_datasets():
+def generate_and_save_all_datasets(result_mode):
     for operator in config.operators_list():
         for operand_digits in config.operand_digits_list():
-            op_dataset, carry_datasets = generate_datasets(operand_digits, operator)
+            op_dataset, carry_datasets = generate_datasets(operand_digits, operator, result_mode)
             save_op_dataset(op_dataset, operand_digits, operator)
             save_carry_datasets(carry_datasets, operand_digits, operator)
     for operand_digits in config.operand_digits_list():
