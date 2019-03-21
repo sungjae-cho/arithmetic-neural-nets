@@ -70,8 +70,8 @@ def l2_coef():
     return 0.000
 
 def dataset_ratio():
-    #(train_ratio, dev_ratio, test_ratio) = (1.0, 0, 0)
-    (train_ratio, dev_ratio, test_ratio) = (0.8*0.8, 0.8*0.2, 0.2)
+    (train_ratio, dev_ratio, test_ratio) = (1.0, 0, 0)
+    #(train_ratio, dev_ratio, test_ratio) = (0.8*0.8, 0.8*0.2, 0.2)
     return train_ratio, dev_ratio, test_ratio
 
 def on_tlu():
@@ -81,9 +81,9 @@ def on_carry_datasets_summary(dataset_type):
     if dataset_type == 'train':
         return False
     if dataset_type == 'dev':
-        return True
+        return False
     if dataset_type == 'test':
-        return True
+        return False
 
 #def max_time():
 #    return 30
