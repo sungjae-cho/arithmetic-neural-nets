@@ -676,7 +676,7 @@ def generate_random_datasets(operand_digits):
     return zero_output_dataset, one_output_dataset, fixed_random_output_dataset, random_output_dataset
 
 
-def generate_datasets(operand_digits, operator, result_mode='fit'):
+def generate_datasets(operand_digits, operator, result_mode='fit', ordered_operands=False):
     '''
     Parameters
     ----------
@@ -685,6 +685,9 @@ def generate_datasets(operand_digits, operator, result_mode='fit'):
     result_mode : str. one of ['fit', 'same'].
     - 'fit' : result_digits == the minumum number of varying result digits.
     - 'same' : result_digits of the five opertors has the same number of digits.
+    ordered_operands : bool. Suppose two operands (a,b) such that a + b, a - b..
+    - If a >= b, ordered_operands == True.
+    - Otherwise, ordered_operands == False.
 
     Returns
     -------
@@ -709,18 +712,30 @@ def generate_datasets(operand_digits, operator, result_mode='fit'):
 
             # Arithemetic operation phase
             if operator == 'add':
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
                 result, n_carries = add_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'subtract':
                 if dec_op1 < dec_op2:
                     continue
                 result, n_carries = subtract_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'multiply':
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
                 result, n_carries = multiply_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'divide':
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
                 if dec_op2 == 0:
                     continue
                 result, n_carries, _ = divide_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'modulo':
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
                 if dec_op2 == 0:
                     continue
                 result, n_carries = modulo_two_numbers(np_bin_op1, np_bin_op2, result_mode)
@@ -756,10 +771,10 @@ def generate_datasets(operand_digits, operator, result_mode='fit'):
     return op_dataset, carry_datasets
 
 
-def generate_and_save_all_datasets(result_mode):
+def generate_and_save_all_datasets(result_mode, ordered_operands):
     for operator in config.operators_list():
         for operand_digits in config.operand_digits_list():
-            op_dataset, carry_datasets = generate_datasets(operand_digits, operator, result_mode)
+            op_dataset, carry_datasets = generate_datasets(operand_digits, operator, result_mode, ordered_operands)
             save_op_dataset(op_dataset, operand_digits, operator)
             save_carry_datasets(carry_datasets, operand_digits, operator)
     for operand_digits in config.operand_digits_list():
@@ -888,14 +903,14 @@ def get_carry_dataset_info_list(carry_datasets, operator):
     return carry_dataset_info_list
 
 
-def write_carry_dataset_statistics():
+def write_carry_dataset_statistics(ordered_operands):
     carry_dataset_info_list = list()
     csv_file_path = get_carry_ds_stat_path()
     create_dir(config.dir_data())
 
     for operator in config.operators_list():
         for operand_digits in config.operand_digits_list():
-            carry_datasets = generate_datasets(operand_digits, operator)
+            carry_datasets = generate_datasets(operand_digits, operator, ordered_operands=ordered_operands)
             carry_dataset_info_list = carry_dataset_info_list + get_carry_dataset_info_list(carry_datasets, operator)
 
     with open(csv_file_path, mode='w') as csv_file:
