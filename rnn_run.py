@@ -450,11 +450,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             if config.on_single_loss():
                 loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=answer_last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
             else:
-                loss = list()
-                for logits in last_logits_series:
-                    loss.append(
-                        tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits)
-                    )
+                losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in last_logits_series]
+                loss = tf.stack(losses, axis=0)
             loss = tf.reduce_mean(loss)
     # Creating a graph for a Jordan RNN ###############################################
 
