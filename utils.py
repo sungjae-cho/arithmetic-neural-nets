@@ -751,7 +751,7 @@ def save_sigmoid_output_seq(seq_dict, run_info):
     pickle_path = join(dir_path, run_id) + '.pickle'
     with open(pickle_path, 'wb') as f:
         pickle.dump(seq_dict, f)
-    print('The final output sequence has been saved as pickle_path.')
+    print('The final output sequence has been saved in {}.',format(pickle_path))
 
 
 def read_measure_logs(experiment_name, run_id):
