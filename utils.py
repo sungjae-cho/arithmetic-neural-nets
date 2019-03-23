@@ -4,6 +4,7 @@ import tensorflow as tf # accuracy_vector_targets, get_fnn_model_name
 import os # create_dir
 import config
 import run_info_utils
+from os.path import join
 from datetime import datetime
 
 
@@ -74,6 +75,12 @@ def get_measures(targets, predictions):
     return (op_accuracy, op_wrong, op_correct,
             digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
             per_digit_accuracy, per_digit_wrong, per_digit_correct)
+
+
+def get_sigmoid_output_seq_path(experiment_name, run_id):
+    dir_path = join(config.dir_sigmoid_output_seq(), experiment_name, run_id)
+
+    return dir_path
 
 
 def get_accuracy(targets, predictions):
@@ -734,6 +741,14 @@ def save_measure_logs(measure_logs, run_id, experiment_name):
     # Write measure_logs
     with open(pickle_path, 'wb') as f:
         pickle.dump(measure_logs, f)
+
+
+def save_sigmoid_output_seq(seq_dict, run_info):
+    experiment_name = run_info['experiment_name']
+    run_id = run_info['run_id']
+    pickle_path = get_sigmoid_output_seq_path(experiment_name, run_id)
+    with open(pickle_path, 'wb') as f:
+        pickle.dump(seq_dict, f)
 
 
 def read_measure_logs(experiment_name, run_id):

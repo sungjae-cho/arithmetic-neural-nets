@@ -230,6 +230,23 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         if op_wrong_val > 512:
             dev_summary_period = init_dev_summary_period
 
+    def compute_sigmoid_output_seq(sess, run_info, sigmoid_outputs_series, float_epoch, all_correct_val):
+        seq_dict = dict()
+        for n_carries in splited_carry_datasets.keys():
+            carry_dataset_input = splited_carry_datasets[n_carries]['input']['test']
+            carry_dataset_output = splited_carry_datasets[n_carries]['output']['test']
+            sigmoid_outputs_series_val = sess.run(
+                sigmoid_outputs_series,
+                feed_dict={inputs:carry_dataset_input, targets:carry_dataset_output,
+                           condition_tlu:False,
+                           training_epoch:float_epoch,
+                           big_batch_training:big_batch_training_val,
+                           all_correct_epoch:(all_correct_val * float_epoch),
+                           all_correct:all_correct_val})
+            #print("└ epoch: {}, step: {}, test_loss: {}, test_accuracy: {}, op_wrong: {}".format(epoch, step, test_loss, test_accuracy, op_wrong_val))
+            seq_dict[n_carries] = sigmoid_outputs_series_val
+
+        utils.save_sigmoid_output_seq(seq_dict, run_info)
 
     ############################################################################
     # Running point.
@@ -359,6 +376,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         # Forward pass
         answer_mask_series = [] # To make answer_step_indices
         answer_masked_last_logits_series = []
+        sigmoid_outputs_series = []
 
         # Sequential computation
         for t in range(max_steps):
@@ -377,6 +395,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             with tf.name_scope('layer2'):
                 last_logits = tf.add(tf.matmul(h1,  W2), b2)
                 sigmoid_outputs = tf.sigmoid(last_logits, name='sigmoid_outputs_step_{}'.format(t))
+                sigmoid_outputs_series.append(sigmoid_outputs)
             ##### Jordan RNN at step t.
 
             # Compute answer_mask.
