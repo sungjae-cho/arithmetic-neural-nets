@@ -723,6 +723,8 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         # carry datasets summary writer #####################################################
         #carry_run_outputs = write_carry_datasets_summary(sess, dev_compute_nodes, float_epoch, all_correct_val, step, 'test')
 
+        compute_sigmoid_output_seq(sess, run_info, sigmoid_outputs_series, float_epoch, all_correct_val)
+
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")
 
