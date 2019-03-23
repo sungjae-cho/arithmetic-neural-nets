@@ -757,3 +757,11 @@ def read_measure_logs(experiment_name, run_id):
         measure_logs = pickle.load(f)
 
     return measure_logs
+
+
+def read_sigmoid_output_seq(experiment_name, run_id):
+    pickle_path = get_sigmoid_output_seq_path(experiment_name, run_id)
+    with open(pickle_path, 'rb') as f:
+        seq_dict = pickle.load(f)
+
+    return seq_dict
