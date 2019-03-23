@@ -376,7 +376,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
             with tf.name_scope('layer2'):
                 last_logits = tf.add(tf.matmul(h1,  W2), b2)
-                sigmoid_outputs = tf.sigmoid(last_logits)
+                sigmoid_outputs = tf.sigmoid(last_logits, name='sigmoid_outputs_step_{}'.format(t))
             ##### Jordan RNN at step t.
 
             # Compute answer_mask.
@@ -707,7 +707,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")
 
-    utils.save_measure_logs(measure_logs)
+    utils.save_measure_logs(measure_logs, run_id, experiment_name)
 
     train_summary_writer.close()
     dev_summary_writer.close()
