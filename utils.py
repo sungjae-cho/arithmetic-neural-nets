@@ -78,7 +78,7 @@ def get_measures(targets, predictions):
 
 
 def get_dir_sigmoid_output_seq(experiment_name, run_id):
-    dir_path = join(config.dir_sigmoid_output_seq(), experiment_name, run_id)
+    dir_path = join(config.dir_sigmoid_output_seq(), experiment_name)
 
     return dir_path
 
