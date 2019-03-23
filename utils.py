@@ -763,8 +763,8 @@ def read_measure_logs(experiment_name, run_id):
 
 
 def read_sigmoid_output_seq(experiment_name, run_id):
-    dir_path = get_dir_sigmoid_output_seq(experiment_name, run_id) + '.pickle'
-    pickle_path = join(dir_path, run_id)
+    dir_path = get_dir_sigmoid_output_seq(experiment_name, run_id)
+    pickle_path = join(dir_path, run_id) + '.pickle'
     with open(pickle_path, 'rb') as f:
         seq_dict = pickle.load(f)
 
