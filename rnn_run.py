@@ -244,7 +244,10 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                            all_correct_epoch:(all_correct_val * float_epoch),
                            all_correct:all_correct_val})
             #print("└ epoch: {}, step: {}, test_loss: {}, test_accuracy: {}, op_wrong: {}".format(epoch, step, test_loss, test_accuracy, op_wrong_val))
-            seq_dict[n_carries] = sigmoid_outputs_series_val
+            seq_dict[n_carries] = dict()
+            seq_dict[n_carries]['output_seq'] = sigmoid_outputs_series_val
+            seq_dict[n_carries]['input'] = carry_dataset_input
+            seq_dict[n_carries]['output'] = carry_dataset_output
 
         utils.save_sigmoid_output_seq(seq_dict, run_info)
 
