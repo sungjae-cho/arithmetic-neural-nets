@@ -86,7 +86,7 @@ def on_carry_datasets_summary(dataset_type):
     if dataset_type == 'dev':
         return False
     if dataset_type == 'test':
-        return True
+        return False
 
 #def max_time():
 #    return 30
