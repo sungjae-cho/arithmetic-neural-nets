@@ -77,7 +77,7 @@ def get_measures(targets, predictions):
             per_digit_accuracy, per_digit_wrong, per_digit_correct)
 
 
-def get_sigmoid_output_seq_path(experiment_name, run_id):
+def get_dir_sigmoid_output_seq(experiment_name, run_id):
     dir_path = join(config.dir_sigmoid_output_seq(), experiment_name, run_id)
 
     return dir_path
@@ -746,7 +746,9 @@ def save_measure_logs(measure_logs, run_id, experiment_name):
 def save_sigmoid_output_seq(seq_dict, run_info):
     experiment_name = run_info['experiment_name']
     run_id = run_info['run_id']
-    pickle_path = get_sigmoid_output_seq_path(experiment_name, run_id)
+    dir_path = get_dir_sigmoid_output_seq(experiment_name, run_id)
+    create_dir(dir_path)
+    pickle_path = join(dir_path, run_id)
     with open(pickle_path, 'wb') as f:
         pickle.dump(seq_dict, f)
 
@@ -760,7 +762,8 @@ def read_measure_logs(experiment_name, run_id):
 
 
 def read_sigmoid_output_seq(experiment_name, run_id):
-    pickle_path = get_sigmoid_output_seq_path(experiment_name, run_id)
+    dir_path = get_dir_sigmoid_output_seq(experiment_name, run_id)
+    pickle_path = join(dir_path, run_id)
     with open(pickle_path, 'rb') as f:
         seq_dict = pickle.load(f)
 
