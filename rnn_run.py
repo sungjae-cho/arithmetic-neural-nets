@@ -377,6 +377,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         confidence_mask = tf.ones(tf.shape(targets)[0])
 
         # Forward pass
+        last_logits_series = []
         answer_mask_series = [] # To make answer_step_indices
         answer_masked_last_logits_series = []
         sigmoid_outputs_series = []
@@ -397,6 +398,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
             with tf.name_scope('layer2'):
                 last_logits = tf.add(tf.matmul(h1,  W2), b2)
+                last_logits_series.append(last_logits)
                 sigmoid_outputs = tf.sigmoid(last_logits, name='sigmoid_outputs_step_{}'.format(t))
                 sigmoid_outputs_series.append(sigmoid_outputs)
             ##### Jordan RNN at step t.
@@ -445,7 +447,14 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
         # Loss: objective function
         with tf.name_scope('loss'):
-            loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=answer_last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
+            if config.on_single_loss():
+                loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=answer_last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
+            else:
+                loss = list()
+                for logits in last_logits_series:
+                    loss.append(
+                        tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits)
+                    )
             loss = tf.reduce_mean(loss)
     # Creating a graph for a Jordan RNN ###############################################
 

@@ -88,6 +88,9 @@ def on_carry_datasets_summary(dataset_type):
     if dataset_type == 'test':
         return False
 
+def on_single_loss():
+    return False
+
 #def max_time():
 #    return 30
 
