@@ -428,10 +428,6 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             answer_masked_last_logits = answer_mask_2d * last_logits
             answer_masked_last_logits_series.append(answer_masked_last_logits)
 
-        # last_confidence_mask tells us
-        # whether the network has confidently answered during the whole steps.
-        last_confidence_mask = confidence_mask
-
         # Make answer_last_logits that contains last_logits of all answers.
         answer_masked_last_logits_stack = tf.stack(answer_masked_last_logits_series, axis=0)
         # reduce_sum in the direction of time steps (axis=0).
