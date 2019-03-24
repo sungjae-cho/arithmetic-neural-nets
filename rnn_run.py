@@ -373,7 +373,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             h1 = tf.zeros(shape=[tf.shape(targets)[0], hidden_units])
         # confidence_mask stands for
         # whether the network has faced any confident prediction at the previous steps.
-        # 1 means it has faced a confident prediction, and 0 does not.
+        # 0 means it has faced a confident prediction, and 1 does not.
         confidence_mask = tf.ones(tf.shape(targets)[0])
 
         # Forward pass
