@@ -14,6 +14,7 @@ def rm_records():
     path_list.append(config.dir_saved_models())
     path_list.append(config.dir_logs())
     path_list.append(config.dir_h1_logs())
+    path_list.append(config.dir_sigmoid_output_seq())
 
     for path in path_list:
         shutil.rmtree('{}/{}'.format(path, experiment_name), ignore_errors=True)
