@@ -380,6 +380,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         last_logits_series = []
         answer_mask_series = [] # To make answer_step_indices
         answer_masked_last_logits_series = []
+        opt_masked_last_logits_series = []
         sigmoid_outputs_series = []
 
         # Sequential computation
@@ -420,6 +421,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                 else:
                     # answer_mask : whether the network answers at the current step.
                     answer_mask = confidence_mask * confidence
+                answer_mask = confidence_mask * confidence
             # confidence_mask : whether the network has been confident.
             # 1 for not being answered. 0 for being answered.
             confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
@@ -430,16 +432,27 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             answer_mask_2d = tf.reshape(answer_mask, (tf.shape(answer_mask)[0], -1))
             # answer_mask_2d is element-wise producted with the current last_logits.
             answer_masked_last_logits = answer_mask_2d * last_logits
+            if t < max_steps - 1:
+                opt_masked_last_logits = answer_mask_2d * last_logits
+            else:
+                last_confidence_mask = confidence_mask
+                confidence_mask_2d = tf.reshape(last_confidence_mask, (tf.shape(confidence_mask)[0], -1))
+                opt_masked_last_logits = (answer_mask_2d + confidence_mask_2d) * last_logits
             answer_masked_last_logits_series.append(answer_masked_last_logits)
+            opt_masked_last_logits_series.append(opt_masked_last_logits)
 
         # Make answer_last_logits that contains last_logits of all answers.
         answer_masked_last_logits_stack = tf.stack(answer_masked_last_logits_series, axis=0)
+        opt_masked_last_logits_stack= tf.stack(opt_masked_last_logits_series, axis=0)
         # reduce_sum in the direction of time steps (axis=0).
         # answer_last_logits.shape == [n_examples, output_dim]
         answer_last_logits = tf.reduce_sum(answer_masked_last_logits_stack, axis=0)
+        opt_last_logits = tf.reduce_sum(opt_masked_last_logits_stack, axis=0)
         # Get predictions of all last_logits
         answer_sigmoid_outputs = tf.sigmoid(answer_last_logits)
+        opt_sigmoid_outputs = tf.sigmoid(opt_last_logits)
         answer_predictions = utils.tf_tlu(answer_sigmoid_outputs, name='answer_predictions')
+        opt_predictions = utils.tf_tlu(opt_sigmoid_outputs, name='opt_predictions')
 
         # Make answer_step_indices.
         answer_mask_stack = tf.stack(answer_mask_series, axis=0)
@@ -456,12 +469,12 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         (op_accuracy, op_wrong, op_correct,
          digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
          per_digit_accuracy, per_digit_wrong, per_digit_correct
-        ) = utils.get_answered_measures(targets, answer_predictions, total_answer_mask)
+        ) = utils.get_answered_measures(targets, opt_predictions, total_answer_mask)
 
         # Loss: objective function
         with tf.name_scope('loss'):
             if config.on_single_loss():
-                loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=answer_last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
+                loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=opt_last_logits) # https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
             else:
                 losses = [tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits) for logits in last_logits_series]
                 loss = tf.stack(losses, axis=0)
