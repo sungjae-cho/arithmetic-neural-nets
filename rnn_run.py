@@ -406,10 +406,15 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             # Compute answer_mask.
             if t < max_steps - 1:
                 # All steps except the last step.
+                # confidence : whether the network is confident at the current step.
                 confidence = utils.tf_confidence(sigmoid_outputs, confidence_prob=confidence_prob)
+                # answer_mask : whether the network answers at the current step.
                 answer_mask = confidence_mask * confidence
+                # confidence_mask : whether the network has been confident.
+                # 1 for not being answered. 0 for being answered.
                 confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
             else:
+                # answer_mask : whether the network answers at the current step.
                 # The last last step
                 # If there is no confident prediction until the step right before the last step,
                 # answer at the last step.
@@ -417,13 +422,17 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
             answer_mask_series.append(answer_mask)
 
+            # answer_mask_2d : the 2-dimensional tensor of answer_mask.
             answer_mask_2d = tf.reshape(answer_mask, (tf.shape(answer_mask)[0], -1))
+            # answer_mask_2d is element-wise producted with the current last_logits.
             answer_masked_last_logits = answer_mask_2d * last_logits
             answer_masked_last_logits_series.append(answer_masked_last_logits)
 
 
         # Make answer_last_logits that contains last_logits of all answers.
         answer_masked_last_logits_stack = tf.stack(answer_masked_last_logits_series, axis=0)
+        # reduce_sum in the direction of time steps (axis=0).
+        # answer_last_logits.shape == [n_examples, output_dim]
         answer_last_logits = tf.reduce_sum(answer_masked_last_logits_stack, axis=0)
         # Get predictions of all last_logits
         answer_sigmoid_outputs = tf.sigmoid(answer_last_logits)
