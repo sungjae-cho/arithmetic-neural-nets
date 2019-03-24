@@ -428,6 +428,9 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
             answer_masked_last_logits = answer_mask_2d * last_logits
             answer_masked_last_logits_series.append(answer_masked_last_logits)
 
+        # last_confidence_mask tells us
+        # whether the network has confidently answered during the whole steps.
+        last_confidence_mask = confidence_mask
 
         # Make answer_last_logits that contains last_logits of all answers.
         answer_masked_last_logits_stack = tf.stack(answer_masked_last_logits_series, axis=0)
@@ -452,7 +455,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         (op_accuracy, op_wrong, op_correct,
          digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
          per_digit_accuracy, per_digit_wrong, per_digit_correct
-        ) = utils.get_measures(targets, answer_predictions)
+        ) = utils.get_confidence_measures(targets, predictions, last_confidence_mask)
 
         # Loss: objective function
         with tf.name_scope('loss'):
