@@ -410,15 +410,15 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
                 confidence = utils.tf_confidence(sigmoid_outputs, confidence_prob=confidence_prob)
                 # answer_mask : whether the network answers at the current step.
                 answer_mask = confidence_mask * confidence
-                # confidence_mask : whether the network has been confident.
-                # 1 for not being answered. 0 for being answered.
-                confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
             else:
                 # answer_mask : whether the network answers at the current step.
                 # The last last step
                 # If there is no confident prediction until the step right before the last step,
                 # answer at the last step.
                 answer_mask = confidence_mask
+            # confidence_mask : whether the network has been confident.
+            # 1 for not being answered. 0 for being answered.
+            confidence_mask = tf.cast(tf.not_equal(confidence_mask, answer_mask), tf.float32)
 
             answer_mask_series.append(answer_mask)
 
