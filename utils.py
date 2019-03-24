@@ -37,6 +37,50 @@ def get_batch(i_batch, batch_size, input_train, output_train):
     return batch_input, batch_output
 
 
+def get_confidence_measures(targets, predictions, last_confidence_mask):
+    '''
+    targets: true target vectors
+     - shape: (examples, vector_dimension)
+     - The elements of vectors are only 0 or 1.
+    predictions: predicted vectors
+     - shape: (examples, vector_dimension)
+     - The elements of vectors are only 0 or 1.
+    last_confidence_mask: whether the network has been confident.
+    - shape: (examples)
+    - 1.0: It has been confident.
+    - 0.0: It has never been confident.
+    '''
+    n_examples = tf.shape(targets)[0]
+    n_dimensions = tf.shape(targets)[1]
+
+    equal = tf.cast(tf.equal(targets, predictions), tf.int32)
+
+    # Measure 1: (target) operation accuracy
+    tensor_op_correct = tf.reduce_prod(equal, axis=1)
+    tensor_op_correct = tf.cast(last_confidence_mask, tf.int32) * tensor_op_correct
+    tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
+
+    op_correct = tf.reduce_sum(tensor_op_correct)
+    op_wrong = n_examples - op_correct
+    op_accuracy = tf.cast(op_correct, tf.float64) / tf.cast(n_examples, tf.float64)
+
+    # Measure 2: digits_mean_accuracy
+    digits_correct = tf.reduce_sum(equal, axis=1)
+    digits_wrong = (tf.ones_like(digits_correct) * n_dimensions) - digits_correct
+    digits_mean_correct = tf.reduce_mean(tf.cast(digits_correct, tf.float64))
+    digits_mean_wrong = tf.reduce_mean(tf.cast(digits_wrong, tf.float64))
+    digits_mean_accuracy = digits_mean_correct / tf.cast(n_dimensions, tf.float64)
+
+    # Measure 3: per_digit_accuracy
+    per_digit_correct = tf.reduce_sum(equal, axis=0)
+    per_digit_wrong = (tf.ones_like(per_digit_correct) * n_examples) - per_digit_correct
+    per_digit_accuracy = per_digit_correct / n_examples
+
+    return (op_accuracy, op_wrong, op_correct,
+            digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
+            per_digit_accuracy, per_digit_wrong, per_digit_correct)
+
+
 def get_measures(targets, predictions):
     '''
     targets: true target vectors
@@ -52,8 +96,9 @@ def get_measures(targets, predictions):
     equal = tf.cast(tf.equal(targets, predictions), tf.int32)
 
     # Measure 1: (target) operation accuracy
-    digits_correct = tf.reduce_sum(equal, axis=1)
-    tensor_op_correct = tf.equal(digits_correct, n_dimensions)
+    #digits_correct = tf.reduce_sum(equal, axis=1)
+    #tensor_op_correct = tf.equal(digits_correct, n_dimensions)
+    tensor_op_correct = tf.reduce_prod(equal, axis=1)
     tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
 
     op_correct = tf.reduce_sum(tensor_op_correct)
