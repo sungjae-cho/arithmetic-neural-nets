@@ -457,7 +457,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         # Make answer_step_indices.
         answer_mask_stack = tf.stack(answer_mask_series, axis=0)
         total_answer_mask = tf.reduce_sum(answer_mask_stack, axis=0)
-        answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32)
+        answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32) + total_answer_mask - tf.ones(tf.shape(targets)[0])
         # Get correct_answer_step_indices.
         answer_correctness = utils.get_op_correct(targets, answer_predictions)
         correct_answer_step_indices = tf.boolean_mask(answer_step_indices, answer_correctness)
