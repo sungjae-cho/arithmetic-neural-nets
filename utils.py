@@ -37,7 +37,7 @@ def get_batch(i_batch, batch_size, input_train, output_train):
     return batch_input, batch_output
 
 
-def get_confidence_measures(targets, predictions, last_confidence_mask):
+def get_answered_measures(targets, predictions, total_answer_mask):
     '''
     targets: true target vectors
      - shape: (examples, vector_dimension)
@@ -45,10 +45,10 @@ def get_confidence_measures(targets, predictions, last_confidence_mask):
     predictions: predicted vectors
      - shape: (examples, vector_dimension)
      - The elements of vectors are only 0 or 1.
-    last_confidence_mask: whether the network has been confident.
+    total_answer_mask: whether the network has been answered for each input.
     - shape: (examples)
-    - 1.0: It has been confident.
-    - 0.0: It has never been confident.
+    - 1.0: It has been answered.
+    - 0.0: It has never been answered.
     '''
     n_examples = tf.shape(targets)[0]
     n_dimensions = tf.shape(targets)[1]
@@ -57,7 +57,7 @@ def get_confidence_measures(targets, predictions, last_confidence_mask):
 
     # Measure 1: (target) operation accuracy
     tensor_op_correct = tf.reduce_prod(equal, axis=1)
-    tensor_op_correct = tf.cast(last_confidence_mask, tf.int32) * tensor_op_correct
+    tensor_op_correct = tf.cast(total_answer_mask, tf.int32) * tensor_op_correct
     tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
 
     op_correct = tf.reduce_sum(tensor_op_correct)

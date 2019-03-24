@@ -443,6 +443,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
 
         # Make answer_step_indices.
         answer_mask_stack = tf.stack(answer_mask_series, axis=0)
+        total_answer_mask = tf.reduce_sum(answer_mask_stack, axis=0)
         answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32)
         # Get correct_answer_step_indices.
         answer_correctness = utils.get_op_correct(targets, answer_predictions)
@@ -455,7 +456,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         (op_accuracy, op_wrong, op_correct,
          digits_mean_accuracy, digits_mean_wrong, digits_mean_correct,
          per_digit_accuracy, per_digit_wrong, per_digit_correct
-        ) = utils.get_confidence_measures(targets, answer_predictions, last_confidence_mask)
+        ) = utils.get_answered_measures(targets, answer_predictions, total_answer_mask)
 
         # Loss: objective function
         with tf.name_scope('loss'):
