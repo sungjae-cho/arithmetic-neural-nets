@@ -228,7 +228,7 @@ def get_op_correct(targets, predictions, total_answer_mask):
     # Measure 1: (target) operation accuracy
     tensor_op_correct = tf.reduce_prod(equal, axis=1)
     tensor_op_correct = tf.cast(total_answer_mask, tf.int32) * tensor_op_correct
-    tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
+    tensor_op_correct = tf.cast(tensor_op_correct, tf.bool)
 
     return tensor_op_correct
 
