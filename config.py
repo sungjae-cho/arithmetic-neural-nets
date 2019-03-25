@@ -84,7 +84,7 @@ def on_carry_datasets_summary(dataset_type):
     if dataset_type == 'train':
         return False
     if dataset_type == 'dev':
-        return False
+        return True
     if dataset_type == 'test':
         return False
 
