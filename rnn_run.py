@@ -564,6 +564,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
     if nn_model_type == 'rnn':
         run_info['rnn_type'] = rnn_type
         run_info['confidence_prob'] = confidence_prob
+        run_info['on_single_loss'] = config.on_single_loss()
     run_info['network_input_dimension'] = input_train.shape[1]
     run_info['network_output_dimension'] = target_train.shape[1]
     run_info['hidden_activation'] = str_activation
