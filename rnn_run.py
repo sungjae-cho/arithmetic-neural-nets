@@ -454,8 +454,12 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         answer_predictions = utils.tf_tlu(answer_sigmoid_outputs, name='answer_predictions')
         opt_predictions = utils.tf_tlu(opt_sigmoid_outputs, name='opt_predictions')
 
-        # Make answer_step_indices.
+        # Make answer_step_indices. #####
+        # answer_mask_stack : shape == [max_steps, n_examples].
+        ## 1 means being answered and 0 means not being answered, at a certain step.
         answer_mask_stack = tf.stack(answer_mask_series, axis=0)
+        # total_answer_mask : shape = [n_examples].
+        ## 1 means being answered and 0 means not being answered, throughout all steps.
         total_answer_mask = tf.reduce_sum(answer_mask_stack, axis=0)
         answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32) + total_answer_mask - tf.ones(tf.shape(targets)[0])
         # Get correct_answer_step_indices.
