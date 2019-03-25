@@ -464,9 +464,11 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         answer_step_indices = tf.cast(tf.argmax(answer_mask_stack, axis=0), tf.float32) + total_answer_mask - tf.ones(tf.shape(targets)[0])
         # Get correct_answer_step_indices.
         answer_correctness = utils.get_op_correct(targets, answer_predictions, total_answer_mask)
+        n_correct_answers = tf.cast(tf.reduce_sum(answer_correctness), tf.float32)
         correct_answer_step_indices = tf.boolean_mask(answer_step_indices, answer_correctness)
         # Get statistics of answer_step_indices.
-        mean_correct_answer_step_indices = tf.reduce_mean(correct_answer_step_indices)
+        #mean_correct_answer_step_indices = tf.reduce_mean(correct_answer_step_indices)
+        mean_correct_answer_step_indices = tf.reduce_sum(correct_answer_step_indices) / n_correct_answers
         min_correct_answer_step_indices = tf.reduce_min(correct_answer_step_indices)
         max_correct_answer_step_indices = tf.reduce_max(correct_answer_step_indices)
 
