@@ -202,7 +202,7 @@ def get_seq_accuracy(op_correct_stack):
 
     return seq_accuracy
 
-def get_op_correct(targets, predictions):
+def get_op_correct(targets, predictions, total_answer_mask):
     '''
     Parameters
     -----
@@ -215,7 +215,7 @@ def get_op_correct(targets, predictions):
 
     Returns
     -----
-    op_correct : numpy.ndarray. shape == (examples).
+    tensor_op_correct : numpy.ndarray. shape == (examples).
      - If an example is correct, the value is 1. Otherwise, 0.
      - If the first and last examples are correct, then op_correct becomes [1, ..., 1].
 
@@ -226,10 +226,11 @@ def get_op_correct(targets, predictions):
     equal = tf.cast(tf.equal(targets, predictions), tf.int32)
 
     # Measure 1: (target) operation accuracy
-    digits_correct = tf.reduce_sum(equal, axis=1)
-    op_correct = tf.equal(digits_correct, n_dimensions)
+    tensor_op_correct = tf.reduce_prod(equal, axis=1)
+    tensor_op_correct = tf.cast(total_answer_mask, tf.int32) * tensor_op_correct
+    tensor_op_correct = tf.cast(tensor_op_correct, tf.int32)
 
-    return op_correct
+    return tensor_op_correct
 
 
 def get_correct_first_indices_stat(op_correct_stack):
