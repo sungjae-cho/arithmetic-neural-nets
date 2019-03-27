@@ -35,6 +35,9 @@ def dir_h1_logs():
 def dir_sigmoid_output_seq():
     return 'sigmoid_output_seq'
 
+def dir_result_statistics():
+	return 'result_statistics'
+
 def period_h1_log():
     # return epoch period
     return 100
