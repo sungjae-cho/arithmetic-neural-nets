@@ -12,13 +12,13 @@
 # - confidence_prob=0.9
 # - max_steps=30
 
-exec &> "log_iccm2019_test.txt"
+exec &> "log_iccm2019.txt"
 
 sleep_sec=10
-experiment_name="iccm2019_test"
+experiment_name="iccm2019"
 
 operand_digits=4
-operator='add'
+operator='subtract'
 rnn_type='jordan'
 activation='relu'
 hidden_units=24
@@ -46,7 +46,7 @@ experiment()
 
   ################################################################################
 
-  for i in {1..7..1}
+  for i in {1..38..1}
     do
       start_echo $operator $rnn_type $confidence_prob
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
