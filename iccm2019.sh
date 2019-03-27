@@ -46,7 +46,7 @@ experiment()
 
   ################################################################################
 
-  for i in {1..30..1}
+  for i in {1..7..1}
     do
       start_echo $operator $rnn_type $confidence_prob
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
