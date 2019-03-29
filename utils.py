@@ -531,9 +531,15 @@ def write_run_info(run_info, float_epoch,
     run_id = run_info['run_id']
 
     # If there is no run_info file, it returns None.
-    old_run_info = run_info_utils.get_run_info(run_id, experiment_name)
-    if old_run_info != None:
-        run_info = old_run_info
+    #old_run_info = run_info_utils.get_run_info(run_id, experiment_name)
+    #if old_run_info != None:
+    # run_info = old_run_info
+
+    # If run_info  has data from TF sessions,
+    if 'time/start_time' in run_info:
+        old_run_info = run_info
+    else:
+        old_run_info = None
 
     # loss, accuracy, n_wrong
     run_info['dev/last_loss'] = dev_loss_val
@@ -652,9 +658,9 @@ def write_run_info(run_info, float_epoch,
 
 
     # Save run_info
-    create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
-    with open('{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id), 'wb') as f:
-        pickle.dump(run_info, f)
+    #create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
+    #with open('{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id), 'wb') as f:
+    #    pickle.dump(run_info, f)
 
 def create_measure_logs(run_info):
     # Create a new measure log dictionary
