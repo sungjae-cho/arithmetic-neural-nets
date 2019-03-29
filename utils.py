@@ -789,6 +789,12 @@ def save_measure_logs(measure_logs, run_id, experiment_name):
         pickle.dump(measure_logs, f)
 
 
+def save_run_info(run_info, run_id, experiment_name):
+    create_dir('{}/{}'.format(config.dir_run_info_experiments(), experiment_name))
+    with open('{}/{}/run-{}.pickle'.format(config.dir_run_info_experiments(), experiment_name, run_id), 'wb') as f:
+        pickle.dump(run_info, f)
+
+
 def save_sigmoid_output_seq(seq_dict, run_info):
     experiment_name = run_info['experiment_name']
     run_id = run_info['run_id']

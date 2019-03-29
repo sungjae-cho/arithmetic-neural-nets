@@ -768,6 +768,7 @@ def mlp_run(experiment_name, operand_bits, operator, rnn_type, str_activation,
         model_saver.save(sess, '{}/{}.ckpt'.format(dir_saved_model, run_id))
         print("Model saved.")
 
+    utils.save_run_info(run_info, run_id, experiment_name)
     utils.save_measure_logs(measure_logs, run_id, experiment_name)
 
     train_summary_writer.close()
