@@ -46,8 +46,122 @@ experiment()
   device_num=$1
 
   ################################################################################
+  # Subtraction ###############################################################
+  # 1
+  operator='subtract'
+  confidence_prob=0.9
+  hidden_units=48
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
 
-  for i in {1..6..1}
+  # 2
+  operator='subtract'
+  confidence_prob=0.9
+  hidden_units=72
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+  # 3
+  operator='subtract'
+  confidence_prob=0.8
+  hidden_units=48
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 4
+  operator='subtract'
+  confidence_prob=0.8
+  hidden_units=72
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 5
+  operator='subtract'
+  confidence_prob=0.7
+  hidden_units=48
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 6
+  operator='subtract'
+  confidence_prob=0.7
+  hidden_units=72
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # Addition ###################################################################
+  # 7
+  operator='add'
+  confidence_prob=0.9
+  hidden_units=48
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 8
+  operator='add'
+  confidence_prob=0.9
+  hidden_units=72
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 9
+  operator='add'
+  confidence_prob=0.8
+  hidden_units=48
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 10
+  operator='add'
+  confidence_prob=0.8
+  hidden_units=72
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 11
+  operator='add'
+  confidence_prob=0.7
+  hidden_units=48
+  for i in {1..5..1}
+    do
+      start_echo $operator $rnn_type $confidence_prob
+      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
+    done
+
+  # 12
+  operator='add'
+  confidence_prob=0.7
+  hidden_units=72
+  for i in {1..5..1}
     do
       start_echo $operator $rnn_type $confidence_prob
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
@@ -55,7 +169,7 @@ experiment()
 }
 
 
-for j in {1..50..1}
+for j in {1..60..1}
   do
     device_num=$(( $j % 5 ))
     experiment $device_num &
