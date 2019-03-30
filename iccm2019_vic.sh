@@ -110,7 +110,7 @@ experiment()
   # 7
   operator='add'
   confidence_prob=0.9
-  hidden_units=48
+  hidden_units=72
   for i in {1..5..1}
     do
       start_echo $operator $rnn_type $confidence_prob
@@ -119,8 +119,8 @@ experiment()
 
   # 8
   operator='add'
-  confidence_prob=0.9
-  hidden_units=72
+  confidence_prob=0.8
+  hidden_units=48
   for i in {1..5..1}
     do
       start_echo $operator $rnn_type $confidence_prob
@@ -130,16 +130,6 @@ experiment()
   # 9
   operator='add'
   confidence_prob=0.8
-  hidden_units=48
-  for i in {1..5..1}
-    do
-      start_echo $operator $rnn_type $confidence_prob
-      python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
-    done
-
-  # 10
-  operator='add'
-  confidence_prob=0.8
   hidden_units=72
   for i in {1..5..1}
     do
@@ -147,7 +137,7 @@ experiment()
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
     done
 
-  # 11
+  # 10
   operator='add'
   confidence_prob=0.7
   hidden_units=48
@@ -157,7 +147,7 @@ experiment()
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
     done
 
-  # 12
+  # 11
   operator='add'
   confidence_prob=0.7
   hidden_units=72
