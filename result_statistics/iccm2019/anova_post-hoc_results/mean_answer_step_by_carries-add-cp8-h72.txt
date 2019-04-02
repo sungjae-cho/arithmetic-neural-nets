@@ -1,0 +1,73 @@
+mean_answer_steps           carries 
+        "numeric"         "integer" 
+mean_answer_steps           carries 
+        "numeric"          "factor" 
+
+ Descriptive statistics by group 
+group: 0
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300  1.1 0.33   1.04    1.07 0.24 0.21 2.52  2.31 1.02     1.96 0.02
+carries*             2 300  1.0 0.00   1.00    1.00 0.00 1.00 1.00  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 1
+                  vars   n mean   sd median trimmed  mad  min max range skew kurtosis   se
+mean_answer_steps    1 300 1.31 0.34   1.26    1.27 0.22 0.39 3.2  2.81 1.43     3.91 0.02
+carries*             2 300 2.00 0.00   2.00    2.00 0.00 2.00 2.0  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 2
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300 1.52 0.45   1.44    1.45 0.34 0.75 3.54  2.79  1.7      3.7 0.03
+carries*             2 300 3.00 0.00   3.00    3.00 0.00 3.00 3.00  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 3
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300 1.74 0.55   1.67    1.65 0.39 0.83 4.17  3.33 1.87     4.43 0.03
+carries*             2 300 4.00 0.00   4.00    4.00 0.00 4.00 4.00  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 4
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300 1.93 0.64   1.81    1.83 0.44 0.85 4.89  4.04 1.86     4.48 0.04
+carries*             2 300 5.00 0.00   5.00    5.00 0.00 5.00 5.00  0.00  NaN      NaN 0.00
+
+	Shapiro-Wilk normality tests
+
+data:  mean_answer_steps by carries 
+
+       W   p-value    
+0 0.9376 6.333e-10 ***
+1 0.8984 2.626e-13 ***
+2 0.8593 7.182e-16 ***
+3 0.8348 < 2.2e-16 ***
+4 0.8407 < 2.2e-16 ***
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+
+Levene's Test for Homogeneity of Variance (center = median)
+        Df F value    Pr(>F)    
+group    4  17.105 1.002e-13 ***
+      1495                      
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+### Oneway Anova for y=mean_answer_steps and x=carries (groups: 0, 1, 2, 3, 4)
+
+Omega squared: 95% CI = [.24; .31], point estimate = .27
+Eta Squared: 95% CI = [.24; .3], point estimate = .28
+
+                                    SS   Df    MS      F     p
+Between groups (error + effect) 131.03    4 32.76 142.82 <.001
+Within groups (error only)      342.91 1495  0.23             
+
+
+### Post hoc test: games-howell
+
+    diff ci.lo ci.hi     t     df     p
+1-0 0.21  0.13  0.28  7.62 596.58 <.001
+2-0 0.42  0.33  0.51 13.09 548.61 <.001
+3-0 0.64  0.53  0.74 17.13 485.21 <.001
+4-0 0.83  0.72  0.95 19.91 443.53 <.001
+2-1 0.21  0.12  0.30  6.43 561.49 <.001
+3-1 0.43  0.32  0.53 11.35 499.59 <.001
+4-1 0.62  0.51  0.74 14.75 456.24 <.001
+3-2 0.22  0.11  0.33  5.31 572.07 <.001
+4-2 0.41  0.29  0.54  9.12 531.90 <.001
+4-3 0.20  0.06  0.33  3.98 584.68  .001

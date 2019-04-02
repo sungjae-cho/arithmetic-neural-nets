@@ -1,0 +1,63 @@
+mean_answer_steps           carries 
+        "numeric"         "integer" 
+mean_answer_steps           carries 
+        "numeric"          "factor" 
+
+ Descriptive statistics by group 
+group: 0
+                  vars   n mean   sd median trimmed  mad  min max range skew kurtosis   se
+mean_answer_steps    1 300 1.29 0.32   1.28    1.27 0.31 0.41 2.3  1.89 0.42     0.52 0.02
+carries*             2 300 1.00 0.00   1.00    1.00 0.00 1.00 1.0  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 1
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300 2.21 0.48   2.15    2.18 0.44 1.19 4.44  3.26  0.8     1.13 0.03
+carries*             2 300 2.00 0.00   2.00    2.00 0.00 2.00 2.00  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 2
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300 3.29 0.67   3.24    3.26 0.66 1.89 5.89     4 0.43     0.09 0.04
+carries*             2 300 3.00 0.00   3.00    3.00 0.00 3.00 3.00     0  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 3
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_steps    1 300 4.37 1.19   4.22    4.26 0.99 1.89 9.22  7.33    1      1.4 0.07
+carries*             2 300 4.00 0.00   4.00    4.00 0.00 4.00 4.00  0.00  NaN      NaN 0.00
+
+	Shapiro-Wilk normality tests
+
+data:  mean_answer_steps by carries 
+
+       W   p-value    
+0 0.9844  0.002417 ** 
+1 0.9630 6.358e-07 ***
+2 0.9840  0.001994 ** 
+3 0.9436 2.690e-09 ***
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+
+Levene's Test for Homogeneity of Variance (center = median)
+        Df F value    Pr(>F)    
+group    3  101.38 < 2.2e-16 ***
+      1196                      
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+### Oneway Anova for y=mean_answer_steps and x=carries (groups: 0, 1, 2, 3)
+
+Omega squared: 95% CI = [.68; .73], point estimate = .71
+Eta Squared: 95% CI = [.69; .73], point estimate = .71
+
+                                     SS   Df     MS      F     p
+Between groups (error + effect) 1597.82    3 532.61 970.72 <.001
+Within groups (error only)       656.21 1196   0.55             
+
+
+### Post hoc test: games-howell
+
+    diff ci.lo ci.hi     t     df     p
+1-0 0.92  0.84  1.01 27.65 517.46 <.001
+2-0 2.00  1.89  2.11 46.85 428.85 <.001
+3-0 3.08  2.90  3.26 43.32 341.68 <.001
+2-1 1.07  0.95  1.20 22.59 545.43 <.001
+3-1 2.16  1.96  2.35 29.07 395.19 <.001
+3-2 1.08  0.88  1.28 13.74 469.93 <.001
