@@ -1,12 +1,12 @@
 #!/bin/bash
 
-i=0
+i_device=0
 n_devices=5
 get_device_num()
 {
-  device_num=$(( $i % $n_devices ))
+  device_num=$(( $i_device % $n_devices ))
   echo $device_num
-  i=$((i + 1))
+  i=$((i_device + 1))
 }
 
 
