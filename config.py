@@ -14,8 +14,8 @@ def dir_data():
     return 'data'
 
 def dir_saved_models():
-    #return 'saved_models'
-    return dir_logs()
+    return 'saved_models'
+    #return dir_logs()
 
 def dir_plot_fig():
     return 'plot_figures'
@@ -29,8 +29,18 @@ def dir_run_info_experiments():
 def dir_measure_log():
     return 'measure_logs'
 
-def dir_vis_hidden():
-    return 'vis_hidden'
+def dir_h1_logs():
+    return 'h1_logs'
+
+def dir_sigmoid_output_seq():
+    return 'sigmoid_output_seq'
+
+def dir_result_statistics():
+	return 'result_statistics'
+
+def period_h1_log():
+    # return epoch period
+    return 100
 
 def carry_dataset_statistics_name():
     return 'carry_dataset_statistics.csv'
@@ -48,29 +58,48 @@ def learning_rate():
     return 0.001
 
 def all_correct_stop():
-    return False
+    return True
 
 def big_batch_saturation():
     return False
 
 def activation():
-    return tf.nn.tanh # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
+    return tf.nn.relu # tf.nn.sigmoid, tf.nn.tanh, tf.nn.relu
 
 def decreasing_dev_summary_period():
     return False
 
 def l1_coef():
-    return 0.01
+    return 0.000
 
 def l2_coef():
-    return 0.001
+    return 0.000
 
 def dataset_ratio():
-    (train_ratio, dev_ratio, test_ratio) = (1.0, 0.0, 0.0)
+    (train_ratio, dev_ratio, test_ratio) = (1.0, 0, 0)
+    #(train_ratio, dev_ratio, test_ratio) = (0.8*0.8, 0.8*0.2, 0.2)
     return train_ratio, dev_ratio, test_ratio
 
-def tlu_on():
-    return True
+def on_tlu():
+    return False
+
+def on_carry_datasets_summary(dataset_type):
+    if dataset_type == 'train':
+        return False
+    if dataset_type == 'dev':
+        return False
+    if dataset_type == 'test':
+        return False
+
+def on_single_loss():
+    return False
+
+#def max_time():
+#    return 30
+
+#def rnn_type():
+#    return 'elman'
+    #return 'jordan'
 
 '''operators_list = ['add', 'subtract', 'multiply', 'divide', 'modulo']
 operand_digits_list = [4, 6, 8]

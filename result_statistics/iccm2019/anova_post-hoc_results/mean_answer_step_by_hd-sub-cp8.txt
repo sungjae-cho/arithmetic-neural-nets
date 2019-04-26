@@ -1,0 +1,52 @@
+mean_answer_step hidden_dimension 
+       "numeric"        "integer" 
+mean_answer_step hidden_dimension 
+       "numeric"         "factor" 
+
+ Descriptive statistics by group 
+group: 24
+                  vars   n mean   sd median trimmed mad  min  max range skew kurtosis   se
+mean_answer_step     1 300 1.43 0.44   1.35     1.4 0.4 0.35 3.51  3.16 0.86      1.5 0.03
+hidden_dimension*    2 300 1.00 0.00   1.00     1.0 0.0 1.00 1.00  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 48
+                  vars   n mean   sd median trimmed  mad  min  max range  skew kurtosis   se
+mean_answer_step     1 300 1.75 0.42   1.75    1.75 0.48 0.76 2.68  1.92 -0.06    -0.72 0.02
+hidden_dimension*    2 300 2.00 0.00   2.00    2.00 0.00 2.00 2.00  0.00   NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 72
+                  vars   n mean   sd median trimmed mad  min  max range  skew kurtosis   se
+mean_answer_step     1 300 1.85 0.42   1.93    1.87 0.4 0.79 2.88  2.08 -0.41    -0.37 0.02
+hidden_dimension*    2 300 3.00 0.00   3.00    3.00 0.0 3.00 3.00  0.00   NaN      NaN 0.00
+
+	Shapiro-Wilk normality tests
+
+data:  mean_answer_step by hidden_dimension 
+
+        W   p-value    
+24 0.9603 2.659e-07 ***
+48 0.9879   0.01331 *  
+72 0.9753 4.933e-05 ***
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+
+Levene's Test for Homogeneity of Variance (center = median)
+       Df F value Pr(>F)
+group   2   0.256 0.7742
+      897               
+### Oneway Anova for y=mean_answer_step and x=hidden_dimension (groups: 24, 48, 72)
+
+Omega squared: 95% CI = [.11; .19], point estimate = .15
+Eta Squared: 95% CI = [.11; .18], point estimate = .15
+
+                                    SS  Df    MS     F     p
+Between groups (error + effect)  28.57   2 14.29 77.77 <.001
+Within groups (error only)      164.78 897  0.18            
+
+
+### Post hoc test: tukey
+
+      diff lwr  upr  p adj
+48-24 0.31 0.23 0.4  <.001
+72-24 0.42 0.34 0.5  <.001
+72-48 0.11 0.02 0.19 .007 

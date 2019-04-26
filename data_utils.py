@@ -13,8 +13,8 @@ def create_dir(directory):
         os.makedirs(directory)
 
 
-def get_result_digits(operand_digits, operator, mode='same'):
-    if mode == 'fit':
+def get_result_digits(operand_digits, operator, result_mode='fit'):
+    if result_mode == 'fit':
         if operator == 'add':
             result_digits = operand_digits + 1
         if operator == 'subtract':
@@ -26,7 +26,7 @@ def get_result_digits(operand_digits, operator, mode='same'):
         if operator == 'modulo':
             result_digits = operand_digits
 
-    if mode == 'same':
+    if result_mode == 'same':
         result_digits = operand_digits * 2 # The maximum result digits
     return result_digits
 
@@ -62,6 +62,21 @@ def get_int_dec(str_bin):
     '''
     int_dec = int(str_bin, 2)
     return int_dec
+
+
+def get_op_symbol(operator):
+    if operator == 'add':
+        return '+'
+    elif operator == 'subtract':
+        return '-'
+    elif operator == 'multiply':
+        return '*'
+    elif operator == 'divide':
+        return '/'
+    elif operator == 'modulo':
+        return r'%'
+    else:
+        return None
 
 
 def get_np_bin(str_bin, np_bin_digits):
@@ -108,6 +123,179 @@ def get_leading_zeros(operand):
 def get_carry_ds_stat_path():
     carry_ds_stat_path = '{}/{}'.format(config.dir_data(), config.carry_dataset_statistics_name())
     return carry_ds_stat_path
+
+
+def get_KL_fold_CV_sets(np_input, np_target, i_iteration, n_outer_folds=5, n_inner_folds=5):
+    '''
+    Parameters
+    -----
+    np_input : numpy.ndarray. shape=(n_examples, dim_input).
+    np_target : numpy.ndarray. shape=(n_examples, dim_target).
+    i_iteration : The iteration index of cross validation.
+     - i_iteration should range from 0 to (n_outer_folds * n_inner_folds - 1)
+    n_outer_folds : int. The number of outer folds.
+    n_inner_folds : int. The number of inner folds.
+
+    Returns
+    -----
+    (input_train, input_dev, input_test, target_train, target_dev, target_test) :
+     - For each element, numpy.ndarray. shape=(n_examples, dim).
+    '''
+    if (i_iteration < 0) or (i_iteration >= n_outer_folds * n_inner_folds):
+        raise ValueError("i_iteration should range from 0 to (n_outer_folds * n_inner_folds - 1)")
+
+    # Get the indices of outer folds and inner folds.
+    i_outer_fold = i_iteration // n_outer_folds
+    i_inner_fold = i_iteration % n_outer_folds
+
+    ds_size = np_input.shape[0]
+    outer_fold_size = ds_size // n_outer_folds
+    inner_fold_size = (ds_size - outer_fold_size) // n_inner_folds
+
+    # Get the start and end indices of the test set.
+    i_start_test = i_outer_fold * outer_fold_size
+    if i_outer_fold < n_outer_folds - 1:
+        i_end_test = (i_outer_fold + 1) * outer_fold_size
+    else:
+        # Without this flow control, the remainders are never included in the test set.
+        i_end_test = ds_size
+
+    # Get the test set.
+    input_test = np_input[i_start_test:i_end_test,:]
+    target_test = np_target[i_start_test:i_end_test,:]
+
+    # Get the inner dataset
+    inner_input_dataset = np.concatenate((np_input[:i_start_test,:], np_input[i_end_test:,:]), axis=0)
+    inner_target_dataset = np.concatenate((np_target[:i_start_test,:], np_target[i_end_test:,:]), axis=0)
+
+    # Get the inner fold size
+    inner_ds_size = inner_input_dataset.shape[0]
+    inner_fold_size = inner_ds_size // n_inner_folds
+
+    # Get the start and end indices of the dev set.
+    i_start_dev = i_inner_fold * inner_fold_size
+    i_end_dev = (i_inner_fold + 1) * inner_fold_size
+
+    # Get the dev set.
+    input_dev = inner_input_dataset[i_start_dev:i_end_dev,:]
+    target_dev = inner_target_dataset[i_start_dev:i_end_dev,:]
+
+    # Get the train set.
+    input_train = np.concatenate((inner_input_dataset[:i_start_dev,:], inner_input_dataset[i_end_dev:,:]), axis=0)
+    target_train = np.concatenate((inner_target_dataset[:i_start_dev,:], inner_target_dataset[i_end_dev:,:]), axis=0)
+
+    return (input_train, input_dev, input_test,
+            target_train, target_dev, target_test)
+
+def get_KL_fold_CV_sets_from_carry_datasets(operand_digits, operator, i_iteration, n_outer_folds=5, n_inner_folds=5):
+    '''
+    Parameters
+    -----
+    operand_digits : int. The number of each operand digits.
+    operator : str. One of 'add', 'subtract', 'multiply', 'divide', 'modulo'
+    i_iteration : The iteration index of cross validation.
+     - i_iteration should range from 0 to (n_outer_folds * n_inner_folds - 1)
+    n_outer_folds : int. The number of outer folds.
+    n_inner_folds : int. The number of inner folds.
+
+    Returns
+    -----
+    (input_train, input_dev, input_test, target_train, target_dev, target_test) :
+     - For each element, numpy.ndarray. shape=(n_examples, dim).
+    splited_carry_datasets : dict.
+     - {n_carries:
+            {'input': {'train': numpy.ndarray,
+                        'dev': numpy.ndarray,
+                        'test': numpy.ndarray},
+            'output': {'train': numpy.ndarray,
+                        'dev': numpy.ndarray,
+                        'test': numpy.ndarray}, ...
+            }
+        }
+     -
+    '''
+    carry_datasets = import_carry_datasets(operand_digits, operator)
+
+    input_train_list = list()
+    target_train_list = list()
+    input_dev_list = list()
+    target_dev_list = list()
+    input_test_list = list()
+    target_test_list = list()
+
+    splited_carry_datasets = dict()
+
+    for carries in carry_datasets.keys():
+        np_input = carry_datasets[carries]['input']
+        np_target = carry_datasets[carries]['output']
+
+        (input_train, input_dev, input_test,
+         target_train, target_dev, target_test) = get_KL_fold_CV_sets(np_input, np_target, i_iteration, n_outer_folds, n_inner_folds)
+
+        input_train_list.append(input_train)
+        target_train_list.append(target_train)
+        input_dev_list.append(input_dev)
+        target_dev_list.append(target_dev)
+        input_test_list.append(input_test)
+        target_test_list.append(target_test)
+
+        # Initialize a dict for the number of carries
+        splited_carry_datasets[carries] = dict()
+        splited_carry_datasets[carries]['input'] = dict()
+        splited_carry_datasets[carries]['output'] = dict()
+
+        splited_carry_datasets[carries]['input']['train'] = input_train
+        splited_carry_datasets[carries]['output']['train'] = target_train
+        splited_carry_datasets[carries]['input']['dev'] = input_dev
+        splited_carry_datasets[carries]['output']['dev'] = target_dev
+        splited_carry_datasets[carries]['input']['test'] = input_test
+        splited_carry_datasets[carries]['output']['test'] = target_test
+
+    input_train = np.concatenate(input_train_list, axis=0)
+    target_train = np.concatenate(target_train_list, axis=0)
+    input_dev = np.concatenate(input_dev_list, axis=0)
+    target_dev = np.concatenate(target_dev_list, axis=0)
+    input_test = np.concatenate(input_test_list, axis=0)
+    target_test = np.concatenate(target_test_list, axis=0)
+
+    return (input_train, input_dev, input_test,
+            target_train, target_dev, target_test,
+            splited_carry_datasets)
+
+
+def np_io2str_op(np_input, np_output, operator):
+    '''
+    Parameters
+    ------
+    np_input : np.ndarray. 1-dimension. shape==(2 * operand_digits).
+    np_output : np.ndarray. 1-dimension. shape==(output_digits).
+
+    Returns
+    ------
+    str_operation : str.
+    - If np_input == [0, 0, 1, 1, 0, 1] and np_output == [0, 1, 1, 0],
+        then str_op == '001+101=0110'.
+    '''
+    operand_digits = np_input.shape[0] // 2
+    str_op1 = str()
+    str_op2 = str()
+    for i in range(operand_digits):
+        str_op1 = str_op1 + str(int(np_input[i]))
+        str_op2 = str_op2 + str(int(np_input[operand_digits + i]))
+
+    result_digits = np_output.shape[0]
+    str_result = str()
+    for i in range(result_digits):
+        str_result = str_result + str(int(np_output[i]))
+
+    str_operation = '{op1} {operator} {op2} = {result}'.format(
+        op1=str_op1,
+        op2=str_op2,
+        operator=get_op_symbol(operator),
+        result=str_result
+    )
+
+    return str_operation
 
 
 def less_than(operand1, operand2):
@@ -181,7 +369,7 @@ def add_two_digits(digit1, digit2, carry):
     return (carry, result)
 
 
-def add_two_numbers(operand1, operand2, mode='same'):
+def add_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -194,7 +382,7 @@ def add_two_numbers(operand1, operand2, mode='same'):
     n_carries : int. The number of carries occurred while addition.
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'add', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'add', result_mode='fit')
     result = np.zeros((result_digits), dtype=config.np_type())
     carry = 0
     n_carries = 0
@@ -206,15 +394,15 @@ def add_two_numbers(operand1, operand2, mode='same'):
             result[-(i+1)] = carry
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'add', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'add', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def subtract_two_numbers(operand1, operand2, mode='same'):
+def subtract_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -229,7 +417,7 @@ def subtract_two_numbers(operand1, operand2, mode='same'):
     n_carries : int. The number of carries that occurred while subtraction.
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'subtract', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'subtract', result_mode='fit')
     cp_operand1 = np.copy(operand1)
     cp_operand2 = np.copy(operand2)
     result = np.zeros((result_digits), dtype=config.np_type())
@@ -248,15 +436,15 @@ def subtract_two_numbers(operand1, operand2, mode='same'):
             result[-i] = 1
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'subtract', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'subtract', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def multiply_two_numbers(operand1, operand2, mode='same'):
+def multiply_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -269,7 +457,7 @@ def multiply_two_numbers(operand1, operand2, mode='same'):
     n_carries : int. The number of carries that occurred while multiplication.
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'multiply', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'multiply', result_mode='fit')
     result = np.zeros((result_digits), dtype=config.np_type()) # To return
     carry_buffer = np.zeros((result_digits), dtype=config.np_type()) # To save carries while addition
 
@@ -292,15 +480,15 @@ def multiply_two_numbers(operand1, operand2, mode='same'):
         result[-i] = remainder
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'multiply', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'multiply', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def divide_two_numbers(operand1, operand2, mode='same'):
+def divide_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -315,7 +503,7 @@ def divide_two_numbers(operand1, operand2, mode='same'):
     remainder : np.ndarray. shape==(operand_digits).
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'divide', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'divide', result_mode='fit')
     result = np.zeros((result_digits), dtype=config.np_type())
 
     leading_zeros = get_leading_zeros(operand2)
@@ -349,22 +537,22 @@ def divide_two_numbers(operand1, operand2, mode='same'):
             n_carries = 0
         else:
             result[division_index] = 1 # Division result
-            local_subtract_result, n_carries = subtract_two_numbers(local_divide_operand1, local_divide_operand2, mode='fit') # Get the remainder
+            local_subtract_result, n_carries = subtract_two_numbers(local_divide_operand1, local_divide_operand2, result_mode='fit') # Get the remainder
 
         n_total_carries = n_total_carries + n_carries
 
     remainder = local_subtract_result
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'divide', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'divide', result_mode=result_mode)
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries, remainder)
 
 
-def modulo_two_numbers(operand1, operand2, mode='same'):
+def modulo_two_numbers(operand1, operand2, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -379,20 +567,20 @@ def modulo_two_numbers(operand1, operand2, mode='same'):
     remainder : np.ndarray. shape==(operand_digits).
     '''
     operand_digits = operand1.shape[0]
-    result_digits = get_result_digits(operand_digits, 'modulo', mode='fit')
+    result_digits = get_result_digits(operand_digits, 'modulo', result_mode='fit')
 
     _, n_carries, result = divide_two_numbers(operand1, operand2)
 
     # Concatenate in front of the array.
-    if mode == 'same':
-        final_result_digits = get_result_digits(operand_digits, 'modulo', mode='same')
+    if result_mode == 'same':
+        final_result_digits = get_result_digits(operand_digits, 'modulo', result_mode='same')
         leading_zeros = np.zeros((final_result_digits - result_digits), dtype=config.np_type())
         result = np.concatenate((leading_zeros, result))
 
     return (result, n_carries)
 
 
-def operate_two_numbers(operand1, operand2, operator):
+def operate_two_numbers(operand1, operand2, operator, result_mode='fit'):
     '''
     Parameters
     ----------
@@ -406,15 +594,15 @@ def operate_two_numbers(operand1, operand2, operator):
     - For division, the size of it will be 3 but the size of the others will be 2.
     '''
     if operator == 'add':
-        return_vector = add_two_numbers(operand1, operand2)
+        return_vector = add_two_numbers(operand1, operand2, result_mode)
     if operator == 'subtract':
-        return_vector = subtract_two_numbers(operand1, operand2)
+        return_vector = subtract_two_numbers(operand1, operand2, result_mode)
     if operator == 'multiply':
-        return_vector = multiply_two_numbers(operand1, operand2)
+        return_vector = multiply_two_numbers(operand1, operand2, result_mode)
     if operator == 'divide':
-        return_vector = divide_two_numbers(operand1, operand2)
+        return_vector = divide_two_numbers(operand1, operand2, result_mode)
     if operator == 'modulo':
-        return_vector = modulo_two_numbers(operand1, operand2)
+        return_vector = modulo_two_numbers(operand1, operand2, result_mode)
 
     return return_vector
 
@@ -442,7 +630,7 @@ def generate_random_datasets(operand_digits):
     fixed_random_output_dataset = {'input':list(), 'output':list()}
     random_output_dataset = {'input':list(), 'output':list()}
 
-    result_digits = get_result_digits(operand_digits, 'add', mode='same')
+    result_digits = get_result_digits(operand_digits, 'add', result_mode='same')
 
     # Get a fixed numpy.ndarray binary random integer.
     np_bin_fixed_rand_output = get_np_bin(get_str_bin(np.random.randint(2**result_digits)), result_digits).reshape(1,-1)
@@ -488,12 +676,18 @@ def generate_random_datasets(operand_digits):
     return zero_output_dataset, one_output_dataset, fixed_random_output_dataset, random_output_dataset
 
 
-def generate_datasets(operand_digits, operator):
+def generate_datasets(operand_digits, operator, result_mode='fit', ordered_operands=False):
     '''
     Parameters
     ----------
     operand_digits: int. the number of the digits of an operand.
-    operator: str. ['add', 'subtract', 'multiply', 'divide', 'modulo'].
+    operator: str. one of ['add', 'subtract', 'multiply', 'divide', 'modulo'].
+    result_mode : str. one of ['fit', 'same'].
+    - 'fit' : result_digits == the minumum number of varying result digits.
+    - 'same' : result_digits of the five opertors has the same number of digits.
+    ordered_operands : bool. Suppose two operands (a,b) such that a + b, a - b..
+    - If a >= b, ordered_operands == True.
+    - Otherwise, ordered_operands == False.
 
     Returns
     -------
@@ -518,21 +712,33 @@ def generate_datasets(operand_digits, operator):
 
             # Arithemetic operation phase
             if operator == 'add':
-                result, n_carries = add_two_numbers(np_bin_op1, np_bin_op2)
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
+                result, n_carries = add_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'subtract':
                 if dec_op1 < dec_op2:
                     continue
-                result, n_carries = subtract_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries = subtract_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'multiply':
-                result, n_carries = multiply_two_numbers(np_bin_op1, np_bin_op2)
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
+                result, n_carries = multiply_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'divide':
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
                 if dec_op2 == 0:
                     continue
-                result, n_carries, _ = divide_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries, _ = divide_two_numbers(np_bin_op1, np_bin_op2, result_mode)
             if operator == 'modulo':
+                if ordered_operands:
+                    if dec_op1 < dec_op2:
+                        continue
                 if dec_op2 == 0:
                     continue
-                result, n_carries = modulo_two_numbers(np_bin_op1, np_bin_op2)
+                result, n_carries = modulo_two_numbers(np_bin_op1, np_bin_op2, result_mode)
 
 
             # Create a list to store operations
@@ -562,13 +768,16 @@ def generate_datasets(operand_digits, operator):
     # Shuffle the pairs of input and output of op_dataset.
     op_dataset['input'], op_dataset['output'] = shuffle_io_pairs(op_dataset['input'], op_dataset['output'])
 
+    for n_carries in carry_datasets.keys():
+        carry_datasets[n_carries]['input'], carry_datasets[n_carries]['output'] = shuffle_io_pairs(carry_datasets[n_carries]['input'], carry_datasets[n_carries]['output'])
+
     return op_dataset, carry_datasets
 
 
-def generate_and_save_all_datasets():
+def generate_and_save_all_datasets(result_mode, ordered_operands):
     for operator in config.operators_list():
         for operand_digits in config.operand_digits_list():
-            op_dataset, carry_datasets = generate_datasets(operand_digits, operator)
+            op_dataset, carry_datasets = generate_datasets(operand_digits, operator, result_mode, ordered_operands)
             save_op_dataset(op_dataset, operand_digits, operator)
             save_carry_datasets(carry_datasets, operand_digits, operator)
     for operand_digits in config.operand_digits_list():
@@ -590,12 +799,19 @@ def save_op_dataset(op_dataset, operand_digits, operator):
 def save_carry_datasets(carry_datasets, operand_digits, operator):
     save_dir = 'data/{}-bit/{}'.format(operand_digits, operator)
     create_dir(save_dir)
-    save_path = '{}/carry_datasets.pickle'.format(save_dir)
 
+    # Ordered carry datasets
+    save_path = '{}/carry_datasets.pickle'.format(save_dir)
     with open(save_path, 'wb') as f:
         pickle.dump(carry_datasets, f)
-
     print("Saved in '{}'.".format(save_path))
+
+    # Ordered carry datasets
+    '''shuffle_carry_datasets(carry_datasets)
+    save_path = '{}/shuffled_carry_datasets.pickle'.format(save_dir)
+    with open(save_path, 'wb') as f:
+        pickle.dump(carry_datasets, f)
+    print("Saved in '{}'.".format(save_path))'''
 
 
 def save_random_datasets(random_datasets, operand_digits):
@@ -634,6 +850,18 @@ def save_random_datasets(random_datasets, operand_digits):
     with open(save_path, 'wb') as f:
         pickle.dump(random_output_dataset, f)
     print("Saved in '{}'.".format(save_path))
+
+
+def shuffle_carry_datasets(carry_datasets):
+    '''
+    Shuffle the given carry_datasets.
+    '''
+    for carries in carry_datasets.keys():
+        carry_ds_size = carry_datasets[carries]['input'].shape[0]
+        randomize = np.arange(carry_ds_size)
+        np.random.shuffle(randomize)
+        carry_datasets[carries]['input'] = carry_datasets[carries]['input'][randomize]
+        carry_datasets[carries]['output'] = carry_datasets[carries]['output'][randomize]
 
 
 def print_carry_datasets_info(carry_datasets):
@@ -678,14 +906,14 @@ def get_carry_dataset_info_list(carry_datasets, operator):
     return carry_dataset_info_list
 
 
-def write_carry_dataset_statistics():
+def write_carry_dataset_statistics(ordered_operands):
     carry_dataset_info_list = list()
     csv_file_path = get_carry_ds_stat_path()
     create_dir(config.dir_data())
 
     for operator in config.operators_list():
         for operand_digits in config.operand_digits_list():
-            carry_datasets = generate_datasets(operand_digits, operator)
+            carry_datasets = generate_datasets(operand_digits, operator, ordered_operands=ordered_operands)
             carry_dataset_info_list = carry_dataset_info_list + get_carry_dataset_info_list(carry_datasets, operator)
 
     with open(csv_file_path, mode='w') as csv_file:
@@ -736,37 +964,87 @@ def plot_carry_dataset_statistics(mode='save', file_format='svg'):
 
 
 def import_op_dataset(operator, operand_digits, train_ratio, dev_ratio, test_ratio):
-    # Path of op_dataset
-    import_path = '{}/{}-bit/{}/op_dataset.pickle'.format(config.dir_data(), operand_digits, operator)
+    input_train_list = list()
+    input_dev_list = list()
+    input_test_list = list()
+    target_train_list = list()
+    target_dev_list = list()
+    target_test_list = list()
 
-    # Import the op_dataset
-    with open(import_path, 'rb') as f:
-        op_dataset = pickle.load(f)
+    splited_carry_datasets = dict()
 
-    # Dataset size
-    ds_size = op_dataset['input'].shape[0]
+    carry_datasets = import_carry_datasets(operand_digits, operator)
 
-    # Make a training set.
-    train_end_index = int(ds_size * train_ratio)
-    input_train = op_dataset['input'][:train_end_index,:]
-    target_train = op_dataset['output'][:train_end_index,:]
+    for carries in carry_datasets.keys():
+        # Initialize a dict for the number of carries
+        splited_carry_datasets[carries] = dict()
+        splited_carry_datasets[carries]['input'] = dict()
+        splited_carry_datasets[carries]['output'] = dict()
 
-    # Make a development set.
-    dev_end_index = int(ds_size * (train_ratio + dev_ratio))
+        # Get the size of a carry dataset
+        carry_ds_size = carry_datasets[carries]['input'].shape[0]
 
-    if dev_ratio != 0:
-        input_dev = op_dataset['input'][:dev_end_index,:]
-        target_dev = op_dataset['output'][:dev_end_index,:]
-    else:
-        input_dev = None
-        target_dev = None
+        # Shuffle input and output data
+        randomize = np.arange(carry_ds_size)
+        np.random.shuffle(randomize)
+        carry_datasets[carries]['input'] = carry_datasets[carries]['input'][randomize]
+        carry_datasets[carries]['output'] = carry_datasets[carries]['output'][randomize]
 
-    # Maek a test set.
-    input_test = op_dataset['input'][dev_end_index:,:]
-    target_test = op_dataset['output'][dev_end_index:,:]
+        # Make a training set.
+        train_end_index = int(carry_ds_size * train_ratio)
+        input_train = carry_datasets[carries]['input'][:train_end_index,:]
+        target_train = carry_datasets[carries]['output'][:train_end_index,:]
+        input_train_list.append(input_train)
+        target_train_list.append(target_train)
+        splited_carry_datasets[carries]['input']['train'] = input_train
+        splited_carry_datasets[carries]['output']['train'] = target_train
+
+
+        # Make a development set.
+        dev_end_index = int(carry_ds_size * (train_ratio + dev_ratio))
+
+        if dev_ratio != 0:
+            input_dev = carry_datasets[carries]['input'][train_end_index:dev_end_index,:]
+            target_dev = carry_datasets[carries]['output'][train_end_index:dev_end_index,:]
+            splited_carry_datasets[carries]['input']['dev'] = input_dev
+            splited_carry_datasets[carries]['output']['dev'] = target_dev
+        else:
+            input_dev = input_train
+            target_dev = target_train
+            splited_carry_datasets[carries]['input']['dev'] = input_train
+            splited_carry_datasets[carries]['output']['dev'] = target_train
+
+        input_dev_list.append(input_dev)
+        target_dev_list.append(target_dev)
+
+        # Maek a test set.
+        if test_ratio != 0:
+            input_test = carry_datasets[carries]['input'][dev_end_index:,:]
+            target_test = carry_datasets[carries]['output'][dev_end_index:,:]
+            input_test_list.append(input_test)
+            target_test_list.append(target_test)
+            splited_carry_datasets[carries]['input']['test'] = input_test
+            splited_carry_datasets[carries]['output']['test'] = target_test
+        else:
+            input_test = input_train
+            target_test = target_train
+            splited_carry_datasets[carries]['input']['test'] = input_train
+            splited_carry_datasets[carries]['output']['test'] = target_train
+
+        input_test_list.append(input_test)
+        target_test_list.append(target_test)
+
+
+    input_train = np.concatenate(input_train_list, axis=0)
+    target_train = np.concatenate(target_train_list, axis=0)
+    input_dev = np.concatenate(input_dev_list, axis=0)
+    target_dev = np.concatenate(target_dev_list, axis=0)
+    input_test = np.concatenate(input_test_list, axis=0)
+    target_test = np.concatenate(target_test_list, axis=0)
 
     return (input_train, input_dev, input_test,
-            target_train, target_dev, target_test)
+            target_train, target_dev, target_test,
+            splited_carry_datasets)
 
 
 def import_carry_datasets(operand_digits, operator):
@@ -782,6 +1060,11 @@ def import_carry_datasets(operand_digits, operator):
     - carry_datasets[n_carries]['input']: shape == (n_operations, input_dim).
     - carry_datasets[n_carries]['output']: shape == (n_operations, output_dim).
     '''
+#    if shuffled:
+#        import_path = 'data/{}-bit/{}/shuffled_carry_datasets.pickle'.format(operand_digits, operator)
+#    else:
+#        import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
+
     import_path = 'data/{}-bit/{}/carry_datasets.pickle'.format(operand_digits, operator)
 
     with open(import_path, 'rb') as f:

@@ -1,0 +1,54 @@
+mean_answer_step hidden_dimension 
+       "numeric"        "integer" 
+mean_answer_step hidden_dimension 
+       "numeric"         "factor" 
+
+ Descriptive statistics by group 
+group: 24
+                  vars   n mean   sd median trimmed  mad  min  max range skew kurtosis   se
+mean_answer_step     1 300 1.95 0.47   1.92    1.94 0.43 0.55 3.49  2.94 0.18     0.46 0.03
+hidden_dimension*    2 300 1.00 0.00   1.00    1.00 0.00 1.00 1.00  0.00  NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 48
+                  vars   n mean   sd median trimmed  mad  min  max range  skew kurtosis   se
+mean_answer_step     1 300 2.23 0.38   2.23    2.24 0.37 1.28 3.23  1.95 -0.05    -0.19 0.02
+hidden_dimension*    2 300 2.00 0.00   2.00    2.00 0.00 2.00 2.00  0.00   NaN      NaN 0.00
+------------------------------------------------------------------------------------------------------------------------------------------------------ 
+group: 72
+                  vars   n mean   sd median trimmed  mad  min max range  skew kurtosis   se
+mean_answer_step     1 300 2.27 0.34   2.27    2.29 0.32 1.29 3.2  1.91 -0.32    -0.15 0.02
+hidden_dimension*    2 300 3.00 0.00   3.00    3.00 0.00 3.00 3.0  0.00   NaN      NaN 0.00
+
+	Shapiro-Wilk normality tests
+
+data:  mean_answer_step by hidden_dimension 
+
+        W  p-value   
+24 0.9921 0.109004   
+48 0.9971 0.865134   
+72 0.9871 0.009036 **
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+
+Levene's Test for Homogeneity of Variance (center = median)
+       Df F value    Pr(>F)    
+group   2    10.1 4.594e-05 ***
+      897                      
+---
+Signif. codes:  0 ¡®***¡¯ 0.001 ¡®**¡¯ 0.01 ¡®*¡¯ 0.05 ¡®.¡¯ 0.1 ¡® ¡¯ 1
+### Oneway Anova for y=mean_answer_step and x=hidden_dimension (groups: 24, 48, 72)
+
+Omega squared: 95% CI = [.08; .15], point estimate = .11
+Eta Squared: 95% CI = [.08; .15], point estimate = .12
+
+                                   SS  Df   MS     F     p
+Between groups (error + effect)  18.7   2 9.35 58.81 <.001
+Within groups (error only)      142.6 897 0.16            
+
+
+### Post hoc test: games-howell
+
+      diff ci.lo ci.hi    t     df     p
+48-24 0.28  0.20  0.36 8.21 572.89 <.001
+72-24 0.32  0.25  0.40 9.69 551.33 <.001
+72-48 0.04 -0.03  0.11 1.36 593.52  .363
