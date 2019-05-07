@@ -18,11 +18,11 @@ sleep_sec=10
 experiment_name="iccm2019"
 
 operand_digits=4
-operator='subtract'
+operator='add'
 rnn_type='jordan'
 activation='relu'
 hidden_units=24
-confidence_prob=0.9
+confidence_prob=0.8
 max_steps=30
 
 start_echo()
@@ -46,7 +46,7 @@ experiment()
 
   ################################################################################
 
-  for i in {1..38..1}
+  for i in {1..75..1}
     do
       start_echo $operator $rnn_type $confidence_prob
       python3 rnn_run.py $experiment_name $operand_digits $operator $rnn_type $activation $hidden_units $confidence_prob $max_steps $device_num
