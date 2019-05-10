@@ -92,7 +92,7 @@ def run_info_to_files():
     print('The dataframe has saved as {}.'.format(csv_path))
 
 
-def import_all_run_info(experiment_name, operator=None, all_correct=None):
+def import_all_run_info(experiment_name, operator=None, all_correct=None, n=None):
     all_run_info = list()
     run_info_files = get_all_run_info_files(experiment_name)
     for run_info_file in run_info_files:
@@ -114,6 +114,8 @@ def import_all_run_info(experiment_name, operator=None, all_correct=None):
             if operator == run_info['operator']:
                 all_run_info.append(run_info)
 
+    if n != None:
+        all_run_info = all_run_info[:n]
     return all_run_info
 
 def import_all_all_correct_run_info(experiment_name):
